@@ -1,0 +1,33 @@
+{
+    "name": "mediagone/types-collections",
+    "type": "library",
+    "description": "Base class replacing PHP's array, also provides efficient filtering/manipulations with an expression API (Microsoft's LINQ-like features).",
+    "keywords": ["collections", "linq", "value objects", "type"],
+    "license": "MIT",
+    "authors": [
+        {"name": "Bruce Suire"}
+    ],
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Mediagone\\Types\\Collections\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Mediagone\\Types\\Collections\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+    },
+    "scripts": {
+    }
+  }
