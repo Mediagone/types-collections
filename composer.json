@@ -27,9 +27,11 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
+        "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.5.25"
     },
     "scripts": {
+        "sa": "phpstan --memory-limit=512M --configuration=phpstan.neon.dist",
         "tests": "phpunit -c phpunit.xml.dist --testsuite Unit_Tests",
         "coverage": "phpunit -c phpunit.xml.dist --coverage-html=tests/coverage/ --log-junit=tests/coverage/junit.xml"
     }
