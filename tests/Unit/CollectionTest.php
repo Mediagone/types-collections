@@ -3,10 +3,10 @@
 namespace Tests\Mediagone\Types\Collections\Unit;
 
 use ArrayAccess;
+use BadMethodCallException;
 use Countable;
-use InvalidArgumentException;
 use IteratorAggregate;
-use OutOfBoundsException;
+use JsonSerializable;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
