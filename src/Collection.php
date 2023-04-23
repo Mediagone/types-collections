@@ -13,7 +13,8 @@ use JsonSerializable;
 
 /**
  * An abstract collection class, that provides chainable methods to perform traversal, filter and projection operations.
- * @template T
+ * Strong-typing or value constraints can be enforced in subclasses using an optional validator.
+ * @template T The type of the items in the collection.
  * @implements ArrayAccess<int,T>
  * @implements IteratorAggregate<int, T>
  */
