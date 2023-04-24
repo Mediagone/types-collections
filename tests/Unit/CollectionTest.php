@@ -14,7 +14,9 @@ use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
+use Tests\Mediagone\Types\Collections\Fakes\FakeFooCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeMixedCollection;
+use TypeError;
 use function iterator_to_array;
 use function json_encode;
 
@@ -292,5 +294,52 @@ final class CollectionTest extends TestCase
     }
     
     
+    
+    
+    
+    
+    //==================================================================================================================
+    // Mutation methods tests
+    //==================================================================================================================
+    
+    // append
+    
+    public function test_can_append() : void
+    {
+        $items = [new FakeFoo(), new FakeFoo(), new FakeFoo()];
+        $collection = FakeFooCollection::fromArray($items);
+        
+        $newItem = new FakeFoo();
+        $result = $collection->append($newItem);
+    
+        self::assertSame([...$items, $newItem], $collection->toArray());
+        self::assertSame($collection, $result); // Collection should be mutable
+    }
+    
+    public function test_cannot_append_element_of_invalid_type() : void
+    {
+        $this->expectException(TypeError::class);
+        FakeFooCollection::new()->append(new FakeBar());
+    }
+    
+    // prepend
+    
+    public function test_can_prepend() : void
+    {
+        $items = [new FakeFoo(), new FakeFoo(), new FakeFoo()];
+        $collection = FakeFooCollection::fromArray($items);
+        
+        $newItem = new FakeFoo();
+        $result = $collection->prepend($newItem);
+        
+        self::assertSame([$newItem, ...$items], $collection->toArray());
+        self::assertSame($collection, $result); // Collection should be mutable
+    }
+    
+    public function test_cannot_prepend_element_of_invalid_type() : void
+    {
+        $this->expectException(TypeError::class);
+        FakeFooCollection::new()->prepend(new FakeBar());
+    }
     
 }

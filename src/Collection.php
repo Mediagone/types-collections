@@ -15,6 +15,7 @@ use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use function array_filter;
 use function array_map;
+use function array_unshift;
 use function array_values;
 use function count;
 use function end;
@@ -335,6 +336,50 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         return max(array_map($selector, $this->items));
     }
+    
+    
+    
+    //==================================================================================================================
+    // Mutation methods
+    //   Use these functions to add, remove, filter or reorder collection's items.
+    //   Depending on the implementation  of "getModifiableInstance" method, they return the current collection instance
+    //   or a new one.
+    //==================================================================================================================
+    
+    /**
+     * Adds a value to the end of the collection.
+     * @param mixed $item The value to append to the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function append($item): self
+    {
+        if ($this->validator !== null) {
+            ($this->validator)($item, null);
+        }
+        
+        $collection =  $this->getModifiableInstance();
+        $collection->items[] = $item;
+        
+        return $collection;
+    }
+    
+    /**
+     * Adds a value to the beginning of the collection.
+     * @param mixed $item The value to prepend to the collection.
+     * @return Collection<T> The current collection
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function prepend($item): self
+    {
+        if ($this->validator !== null) {
+            ($this->validator)($item, null);
+        }
+    
+        $collection = $this->getModifiableInstance();
+        array_unshift($collection->items, $item);
+        return $collection;
+    }
+    
     
     
     
