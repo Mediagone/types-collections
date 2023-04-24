@@ -23,6 +23,7 @@ use function array_unshift;
 use function array_values;
 use function count;
 use function end;
+use function in_array;
 use function max;
 use function min;
 use function shuffle;
@@ -653,9 +654,28 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return !empty($this->items);
     }
     
+    
+    /**
+     * Determines whether the collection contains a specified item.
+     * If a comparer function is specified, determines whether the collection contains a specified item by using this equality comparer.
+     * @param mixed $needle The value to locate in the collection.
+     * @param ?callable(mixed $item, mixed $needle):bool $comparer An equality comparer to compare values, or 'null' to use the default equality comparer.
+     * @return bool Returns 'true' if the source collection contains an item that has the specified value; otherwise, 'false'.
+     */
+    public function contains($needle, ?callable $comparer = null) : bool
+    {
+        if ($comparer !== null) {
+            foreach ($this->items as $item) {
+                if ($comparer($item, $needle)) {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         
         return $collections;
+        return in_array($needle, $this->items, true);
     }
     
     

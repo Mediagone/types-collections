@@ -602,4 +602,19 @@ final class CollectionTest extends TestCase
         self::assertFalse($collection->any(fn($item) => $item > 3));
     }
     
+    // contains
+    
+    public function test_if_contains_a_value() : void
+    {
+        // Primitive types
+        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->contains(2));
+        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->contains(4));
+        self::assertTrue(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('b'));
+        self::assertFalse(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('d'));
+        // Class instances
+        $foo = new FakeFoo();
+        self::assertTrue(FakeMixedCollection::fromArray([new FakeFoo(), $foo])->contains($foo));
+        self::assertFalse(FakeMixedCollection::fromArray([new FakeFoo(), new FakeFoo()])->contains(new FakeFoo()));
+    }
+    
 }
