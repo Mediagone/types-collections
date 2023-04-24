@@ -420,6 +420,22 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     // Divides an input collection into two sections, without rearranging the items, and then returning one of the sections.
     //==================================================================================================================
     
+    // where
+    
+    /**
+     * Filters the collection items based on a predicate.
+     * @param callable(T $item):bool $predicate A function to test each item for a condition.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function where(callable $predicate)
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_values(array_filter($this->items, $predicate));
+        
+        return $collection;
+    }
+    
+    
     /**
      * Bypasses a specified number of items in the collection and then returns the remaining items (equivalent of "array_slice" PHP function with $offset = $count).
      * @param int $count The number of items to skip before returning the remaining items.

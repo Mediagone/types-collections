@@ -384,6 +384,18 @@ final class CollectionTest extends TestCase
     // Partitioning methods tests
     //==================================================================================================================
     
+    // where
+    
+    public function test_can_where_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        $filteredCollection = $collection->where(fn($item) => $item % 2 === 0);
+        
+        // Collection should be mutable and contain only even values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([2, 4, 6], $filteredCollection->toArray());
+    }
+    
     // skip
     
     public function test_can_skip_items() : void
