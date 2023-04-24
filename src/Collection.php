@@ -470,6 +470,54 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
+    /**
+     * Returns a specified number of contiguous items from the start of a collection (equivalent of "array_slice" PHP function with $offset = 0, $length = $count).
+     * @param int $count The number of items to return.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function take(int $count) : self
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_slice($this->items, 0, $count);
+        
+        return $collection;
+    }
+    
+    /**
+     * Returns a new enumerable collection that contains the last count items from source (equivalent of "array_slice" PHP function with $offset = items count - $count).
+     * @param int $count The number of items to return.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function takeLast(int $count) : self
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_slice($this->items, count($this->items) - $count);
+        
+        return $collection;
+    }
+    
+    /**
+     * Returns items from the collection as long as a specified condition is true.
+     * @param callable(T $item, int $index=):bool $predicate A function to test each item for a condition.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function takeWhile(callable $predicate) : self
+    {
+        $count = 0;
+        foreach ($this->items as $key => $item) {
+            if (! $predicate($item, $key)) {
+                break;
+            }
+            $count++;
+        }
+        
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_slice($this->items, 0, $count);
+        
+        return $collection;
+    }
+    
+    
     
     
     

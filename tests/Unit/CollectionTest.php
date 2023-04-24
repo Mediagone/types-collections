@@ -426,4 +426,54 @@ final class CollectionTest extends TestCase
         self::assertSame([5, 6], $resultCollection->toArray());
     }
     
+    // take
+    
+    public function test_can_take_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        $resultCollection = $collection->take(3);
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([1, 2, 3], $resultCollection->toArray());
+    }
+    
+    // takeLast
+    
+    public function test_can_take_items_from_last() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        $resultCollection = $collection->takeLast(2);
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([5, 6], $resultCollection->toArray());
+    }
+    
+    // takeWhile
+    
+    public function test_can_take_items_while() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Take items lesser than 5
+        $resultCollection = $collection->takeWhile(fn($item) => $item < 5);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([1, 2, 3, 4], $resultCollection->toArray());
+    }
+    
+    // skip + take
+    
+    public function test_can_skip_then_take_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        $resultCollection = $collection->skip(1)->take(3);
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([2, 3, 4], $resultCollection->toArray());
+    }
+    
 }
