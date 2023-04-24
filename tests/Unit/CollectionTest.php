@@ -510,4 +510,15 @@ final class CollectionTest extends TestCase
         self::assertSame(6.5, FakeMixedCollection::fromArray($items)->sum($selector));
     }
     
+    // aggregate
+    
+    public function test_can_aggregate_values() : void
+    {
+        // With primitive type
+        self::assertSame(45, FakeMixedCollection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])->aggregate(0, fn($total, $item) => $total + $item));
+        // With class instances and a custom selector function
+        $items = [new FakeFoo('1'), new FakeFoo('2'), new FakeFoo('3')];
+        self::assertSame(6., FakeMixedCollection::fromArray($items)->sum(static fn(FakeFoo $foo) => (float)$foo->getValue()));
+    }
+    
 }

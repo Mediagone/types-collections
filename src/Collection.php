@@ -556,6 +556,23 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return (float)array_sum(array_map($selector, $this->items));
     }
     
+    /**
+     * Computes the sum of a collection of numeric values (equivalent of "array_reduce" PHP function).
+     * @param mixed $seed The initial accumulator value.
+     * @param callable(mixed $total, T $item):mixed $accumulator An accumulator function to be invoked on each item.
+     * @return mixed The sum of the values in the collection.
+     */
+    public function aggregate($seed, callable $accumulator)
+    {
+        foreach ($this->items as $item) {
+            $seed = $accumulator($seed, $item);
+        }
+        
+        return $seed;
+    }
+    
+    
+    
     
     
     //==================================================================================================================
