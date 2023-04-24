@@ -18,6 +18,7 @@ use function array_filter;
 use function array_map;
 use function array_reverse;
 use function array_slice;
+use function array_sum;
 use function array_unshift;
 use function array_values;
 use function count;
@@ -539,6 +540,20 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         $count = (float)count($items);
         return $count ? array_sum($items)/$count : 0.;
+    }
+    
+    /**
+     * Computes the sum of a collection of numeric values.
+     * @param ?callable(mixed $item):float $selector A transform function to apply to each item of the input collection.
+     * @return float The sum of the values in the collection.
+     */
+    public function sum(?callable $selector = null): float
+    {
+        if ($selector === null) {
+            return (float)array_sum($this->items);
+        }
+        
+        return (float)array_sum(array_map($selector, $this->items));
     }
     
     

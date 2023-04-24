@@ -496,4 +496,18 @@ final class CollectionTest extends TestCase
         self::assertSame(6.5/3, FakeMixedCollection::fromArray($items)->average($selector));
     }
     
+    public function test_can_calculate_sum() : void
+    {
+        // With primitive types
+        self::assertSame(6., FakeMixedCollection::fromArray([1, 2, 3])->sum());
+        self::assertSame(6., FakeMixedCollection::fromArray([3, 2, 1])->sum());
+        self::assertSame(6.5, FakeMixedCollection::fromArray([1, 2.5, 3])->sum());
+        // With class instances and a custom selector function
+        $selector = static fn(FakeFoo $foo) => (float)$foo->getValue();
+        $items = [new FakeFoo('1'), new FakeFoo('2'), new FakeFoo('3')];
+        self::assertSame(6., FakeMixedCollection::fromArray($items)->sum($selector));
+        $items = [new FakeFoo('1'), new FakeFoo('2.5'), new FakeFoo('3')];
+        self::assertSame(6.5, FakeMixedCollection::fromArray($items)->sum($selector));
+    }
+    
 }
