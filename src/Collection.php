@@ -631,6 +631,28 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return true;
     }
     
+    
+    /**
+     * Determines whether a collection contains any items.
+     * If a predicate function is specified, determines whether any item of the collection satisfies a condition.
+     * @param ?callable(mixed $item):bool $predicate A function to test each item for a condition.
+     * @return bool true if the collection contains any items; otherwise, false.
+     */
+    public function any(?callable $predicate = null) : bool
+    {
+        if ($predicate !== null) {
+            foreach ($this->items as $item) {
+                if ($predicate($item) === true) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        return !empty($this->items);
+    }
+    
         }
         
         return $collections;

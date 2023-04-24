@@ -584,4 +584,22 @@ final class CollectionTest extends TestCase
         self::assertFalse(FakeMixedCollection::fromArray([1, 1, 2])->all(fn($item) => $item === 1));
     }
     
+    // any
+    
+    public function test_if_any_element_satisfies_a_condition() : void
+    {
+        // Without custom predicate function (check fullness)
+        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->any());
+        self::assertFalse(FakeMixedCollection::fromArray([])->any());
+        // With custom predicate function (all elements satisfy the condition)
+        $collection = FakeMixedCollection::fromArray([1, 2, 3]);
+        self::assertTrue($collection->any(fn($item) => $item < 2));
+        self::assertTrue($collection->any(fn($item) => $item < 3));
+        self::assertTrue($collection->any(fn($item) => $item < 4));
+        // With custom predicate function (no element satisfies the condition)
+        $collection = FakeMixedCollection::fromArray([1, 2, 3]);
+        self::assertFalse($collection->any(fn($item) => $item < 0));
+        self::assertFalse($collection->any(fn($item) => $item > 3));
+    }
+    
 }
