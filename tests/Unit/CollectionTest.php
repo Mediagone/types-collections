@@ -366,4 +366,15 @@ final class CollectionTest extends TestCase
         self::assertNotSame($items, $collection->toArray()); // todo?
     }
     
+    
+    public function test_can_reverse_items() : void
+    {
+        $items = [1, 2, 3, 4];
+        $collection = FakeMixedCollection::fromArray($items);
+        
+        // Collection should be mutable and items should have been reordered (reverse order)
+        $sortedCollection = $collection->reverse();
+        self::assertSame($collection, $sortedCollection);
+        self::assertSame([4, 3, 2, 1], $sortedCollection->toArray());
+    }
 }

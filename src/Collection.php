@@ -15,6 +15,7 @@ use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use function array_filter;
 use function array_map;
+use function array_reverse;
 use function array_unshift;
 use function array_values;
 use function count;
@@ -390,6 +391,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     {
         $collection = $this->getModifiableInstance();
         shuffle($collection->items);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Inverts the order of the items in the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function reverse(): self
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_reverse($this->items);
         
         return $collection;
     }
