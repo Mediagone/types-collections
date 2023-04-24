@@ -587,6 +587,18 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $seed;
     }
     
+    // select
+    
+    /**
+     * Projects each item of the collection into a new form and return an array that contains the transformed items of the collection.
+     * @param callable(T $item=):mixed $selector A transform function to apply to each item of the collection.
+     * @return mixed[] The transformed items of the collection.
+     */
+    public function select(callable $selector) : array
+    {
+        return array_values(array_map($selector, $this->items));
+    }
+    
     
     
     /**

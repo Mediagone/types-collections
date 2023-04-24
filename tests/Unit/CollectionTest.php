@@ -552,4 +552,16 @@ final class CollectionTest extends TestCase
         self::assertSame(6., FakeMixedCollection::fromArray($items)->sum(static fn(FakeFoo $foo) => (float)$foo->getValue()));
     }
     
+    // select
+    
+    public function test_can_select_items() : void
+    {
+        $items = [1, 4, 2, 2, 3, 4];
+        $collection = FakeMixedCollection::fromArray($items);
+        $selectedItems = $collection->select(static fn($item) => $item * 10);
+        
+        // Collection should be mutable and contain only unique items
+        self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems);
+    }
+    
 }
