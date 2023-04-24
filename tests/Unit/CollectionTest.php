@@ -342,4 +342,28 @@ final class CollectionTest extends TestCase
         FakeFooCollection::new()->prepend(new FakeBar());
     }
     
+    // shuffle
+    
+    public function test_can_shuffle_items() : void
+    {
+        $items = [
+            new FakeFoo('1'),
+            new FakeFoo('2'),
+            new FakeFoo('3'),
+            new FakeFoo('4'),
+            new FakeFoo('5'),
+            new FakeFoo('6'),
+            new FakeFoo('7'),
+            new FakeFoo('8'),
+            new FakeFoo('9'),
+        ];
+        $collection = FakeFooCollection::fromArray($items);
+        
+        // Collection should be mutable and items reordered
+        $shuffledCollection = $collection->shuffle();
+        self::assertSame($collection, $shuffledCollection);
+        self::assertCount(9, $collection->toArray());
+        self::assertNotSame($items, $collection->toArray()); // todo?
+    }
+    
 }

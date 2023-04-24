@@ -21,6 +21,7 @@ use function count;
 use function end;
 use function max;
 use function min;
+use function shuffle;
 
 
 /**
@@ -377,6 +378,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
         $collection = $this->getModifiableInstance();
         array_unshift($collection->items, $item);
+        return $collection;
+    }
+    
+    
+    /**
+     * Randomizes the order of the items in the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function shuffle(): self
+    {
+        $collection = $this->getModifiableInstance();
+        shuffle($collection->items);
+        
         return $collection;
     }
     
