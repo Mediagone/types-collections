@@ -601,18 +601,36 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    
+    //==================================================================================================================
+    // Quantifier methods
+    // Returns a Boolean value that indicates whether some or all of the items in a collection satisfy a condition.
+    //==================================================================================================================
+    
     /**
      * Splits the items of the collection into chunks of size at most size.
      * @param positive-int $size The maximum size of each chunk.
      * @return static[] An array of collections that contain the split items.
+     * Determines whether all items of the collection satisfy a condition.
+     * @param callable(mixed $item):bool $predicate A function to test each item for a condition.
+     * @return bool true if every item of the collection passes the test in the specified predicate, or if the sequence is empty; otherwise, false.
      */
     public function chunk(int $size) : array
+    public function all(callable $predicate) : bool
     {
         $chunks = array_chunk($this->items, $size);
+        foreach ($this->items as $item) {
+            if ($predicate($item) === false) {
+                return false;
+            }
+        }
         
         $collections = [];
         foreach ($chunks as $chunk) {
             $collections[] = static::fromArray($chunk);
+        return true;
+    }
+    
         }
         
         return $collections;

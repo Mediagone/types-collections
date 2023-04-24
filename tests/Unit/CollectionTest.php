@@ -564,4 +564,24 @@ final class CollectionTest extends TestCase
         self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems);
     }
     
+    
+    //==================================================================================================================
+    // Quantifier methods tests
+    //==================================================================================================================
+    
+    // all
+    
+    public function test_if_all_elements_satisfy_a_condition() : void
+    {
+        // All elements satisfy the condition
+        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->all(fn($item) => $item > 0));
+        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->all(fn($item) => $item < 4));
+        self::assertTrue(FakeMixedCollection::fromArray([1, 1, 1])->all(fn($item) => $item === 1));
+        // Not all elements satisfy the condition
+        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->all(fn($item) => $item > 1));
+        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->all(fn($item) => $item > 2));
+        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->all(fn($item) => $item > 3));
+        self::assertFalse(FakeMixedCollection::fromArray([1, 1, 2])->all(fn($item) => $item === 1));
+    }
+    
 }
