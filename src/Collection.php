@@ -13,6 +13,7 @@ use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
+use function array_chunk;
 use function array_filter;
 use function array_map;
 use function array_reverse;
@@ -519,6 +520,26 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    
+    
+    
+    //==================================================================================================================
+    // Aggregation methods
+    // Computes a single value from a collection of values.
+    //==================================================================================================================
+    
+    /**
+     * Computes the average of the collection values.
+     * @param ?callable(mixed $item):float $selector A transform function invoked on each item of the collection before computing the average resulting value.
+     * @return float The average value of the collection.
+     */
+    public function average(?callable $selector = null): float
+    {
+        $items =  ($selector === null) ? $this->items : array_map($selector, $this->items);
+        
+        $count = (float)count($items);
+        return $count ? array_sum($items)/$count : 0.;
+    }
     
     
     

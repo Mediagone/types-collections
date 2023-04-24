@@ -476,4 +476,24 @@ final class CollectionTest extends TestCase
         self::assertSame([2, 3, 4], $resultCollection->toArray());
     }
     
+    
+    
+    //==================================================================================================================
+    // Aggregation methods tests
+    //==================================================================================================================
+    
+    public function test_can_calculate_average() : void
+    {
+        // With primitive types
+        self::assertSame(2., FakeMixedCollection::fromArray([1, 2, 3])->average());
+        self::assertSame(2., FakeMixedCollection::fromArray([3, 2, 1])->average());
+        self::assertSame(6.5/3, FakeMixedCollection::fromArray([1, 2.5, 3])->average());
+        // With class instances and a custom selector function
+        $selector = static fn(FakeFoo $foo) => (float)$foo->getValue();
+        $items = [new FakeFoo('1'), new FakeFoo('2'), new FakeFoo('3')];
+        self::assertSame(2., FakeMixedCollection::fromArray($items)->average($selector));
+        $items = [new FakeFoo('1'), new FakeFoo('2.5'), new FakeFoo('3')];
+        self::assertSame(6.5/3, FakeMixedCollection::fromArray($items)->average($selector));
+    }
+    
 }
