@@ -573,6 +573,24 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    /**
+     * Splits the items of the collection into chunks of size at most size.
+     * @param positive-int $size The maximum size of each chunk.
+     * @return static[] An array of collections that contain the split items.
+     */
+    public function chunk(int $size) : array
+    {
+        $chunks = array_chunk($this->items, $size);
+        
+        $collections = [];
+        foreach ($chunks as $chunk) {
+            $collections[] = static::fromArray($chunk);
+        }
+        
+        return $collections;
+    }
+    
+    
     
     
     //==================================================================================================================

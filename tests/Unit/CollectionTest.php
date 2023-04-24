@@ -477,6 +477,25 @@ final class CollectionTest extends TestCase
     }
     
     
+    // chunk
+    
+    public function test_can_chunk_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        $chunks = $collection->chunk(4);
+        
+        // Original collection should not have changed
+        self::assertSame([1, 2, 3, 4, 5, 6], $collection->toArray());
+        
+        // Resulting collection should contain chunks of original collection's items
+        self::assertCount(2, $chunks);
+        self::assertInstanceOf(FakeMixedCollection::class, $chunks[0]);
+        self::assertSame([1, 2, 3, 4], $chunks[0]->toArray());
+        self::assertInstanceOf(FakeMixedCollection::class, $chunks[1]);
+        self::assertSame([5, 6], $chunks[1]->toArray());
+    }
+    
+    
     
     //==================================================================================================================
     // Aggregation methods tests
