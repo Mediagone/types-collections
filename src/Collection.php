@@ -16,6 +16,7 @@ use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use function array_filter;
 use function array_map;
 use function array_reverse;
+use function array_slice;
 use function array_unshift;
 use function array_values;
 use function count;
@@ -408,6 +409,66 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
+    
+    
+    
+    
+    //==================================================================================================================
+    // Partitioning methods
+    // Divides an input collection into two sections, without rearranging the items, and then returning one of the sections.
+    //==================================================================================================================
+    
+    /**
+     * Bypasses a specified number of items in the collection and then returns the remaining items (equivalent of "array_slice" PHP function with $offset = $count).
+     * @param int $count The number of items to skip before returning the remaining items.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function skip(int $count) : self
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_slice($this->items, $count);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Returns a new enumerable collection that contains the items from source with the last count items of the source collection omitted.
+     * Returns a new enumerable collection that contains the last count items from source (equivalent of "array_slice" PHP function with $offset = items count - $count).
+     * @param int $count The number of items to omit from the end of the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     * TODO @ return static The current collection instance (or a new instance if the collection is immutable) that contains the items from source minus count items from the end of the collection.
+     */
+    public function skipLast(int $count) : self
+    {
+        $collection = $this->getModifiableInstance();
+        $length = max(0, count($this->items) - $count);
+        $collection->items = array_slice($this->items, 0, $length);
+        
+        return $collection;
+    }
+    
+    /**
+     * Bypasses items in the collection as long as a specified condition is true and then returns the remaining items.
+     * @param callable(T $item, int $index=):bool $predicate A function to test each item for a condition.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     * TODO @ return static The current collection instance (or a new instance if the collection is immutable) that contains the items from the input collection starting at the first item in the linear series that does not pass the test specified by predicate.
+     */
+    public function skipWhile(callable $predicate) : self
+    {
+        $index = 0;
+        foreach ($this->items as $key => $item) {
+            if (! $predicate($item, $key)) {
+                break;
+            }
+            $index++;
+        }
+        
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_slice($this->items, $index);
+        
+        return $collection;
+    }
     
     
     

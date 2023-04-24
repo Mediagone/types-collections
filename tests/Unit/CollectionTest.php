@@ -377,4 +377,53 @@ final class CollectionTest extends TestCase
         self::assertSame($collection, $sortedCollection);
         self::assertSame([4, 3, 2, 1], $sortedCollection->toArray());
     }
+    
+    
+    
+    //==================================================================================================================
+    // Partitioning methods tests
+    //==================================================================================================================
+    
+    // skip
+    
+    public function test_can_skip_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Skip first 3 items
+        $resultCollection = $collection->skip(3);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([4, 5, 6], $resultCollection->toArray());
+    }
+    
+    // skipLast
+    
+    public function test_can_skip_items_from_end() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Skip last 2 items
+        $resultCollection = $collection->skipLast(2);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([1, 2, 3, 4], $resultCollection->toArray());
+    }
+    
+    // skipWhile
+    
+    public function test_can_skip_items_while() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        
+        // Skip items lesser than 5
+        $resultCollection = $collection->skipWhile(fn($item) => $item < 5);
+        
+        // Collection should be mutable and contain only the specified subset of items
+        self::assertSame($collection, $resultCollection);
+        self::assertSame([5, 6], $resultCollection->toArray());
+    }
+    
 }
