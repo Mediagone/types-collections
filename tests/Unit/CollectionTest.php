@@ -378,6 +378,32 @@ final class CollectionTest extends TestCase
         self::assertSame([4, 3, 2, 1], $sortedCollection->toArray());
     }
     
+    public function test_can_make_items_distinct_with_primitives() : void
+    {
+        $items = [1, 4, 2, 2, 3, 4];
+        $collection = FakeMixedCollection::fromArray($items);
+        
+        // Collection should be mutable and contain only unique items (duplicated items are removed)
+        $uniqueCollection = $collection->distinct();
+        self::assertSame($collection, $uniqueCollection);
+        self::assertSame([1, 4, 2, 3], $uniqueCollection->toArray());
+    }
+    
+    public function test_can_make_items_distinct_with_class_instances() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('2');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo4, $foo2, $foo2, $foo3, $foo4, $foo5]);
+        
+        // Collection should be mutable and contain only unique instances (duplicated items are removed)
+        $uniqueCollection = $collection->distinct();
+        self::assertSame($collection, $uniqueCollection);
+        self::assertSame([$foo1, $foo4, $foo2, $foo3, $foo5], $uniqueCollection->toArray());
+    }
+    
     
     
     //==================================================================================================================

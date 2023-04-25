@@ -414,6 +414,26 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    /**
+     * Returns distinct items from the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    public function distinct() : self
+    {
+        $collection = $this->getModifiableInstance();
+        
+        $items = [];
+        foreach ($this->items as $item) {
+            if (! in_array($item, $items, true)) {
+                $items[] = $item;
+            }
+        }
+        
+        $collection->items = $items;
+        
+        return $collection;
+    }
+    
     
     
     //==================================================================================================================
