@@ -434,6 +434,29 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
+    /**
+     * Returns distinct items from the collection according to a specified key selector function.
+     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
+     * @return static<T>
+     */
+    public function distinctBy(callable $keySelector) : self
+    {
+        $collection = $this->getModifiableInstance();
+        
+        $items = [];
+        $itemsKey = [];
+        foreach ($this->items as $item) {
+            $key = $keySelector($item);
+            if (! in_array($key, $itemsKey, true)) {
+                $itemsKey[] = $key;
+                $items[] = $item;
+            }
+        }
+        
+        $collection->items = $items;
+        
+        return $collection;
+    }
     
     
     //==================================================================================================================
