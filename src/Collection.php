@@ -132,31 +132,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
-    //==================================================================================================================
-    // Countable interface implementation
-    //==================================================================================================================
-    
-    /**
-     * Returns the number of items in the collection.
-     */
-    final public function count() : int
-    {
-        return count($this->items);
-    }
-    
-    
-    
-    //==================================================================================================================
-    // JsonSerializable interface implementation
-    //==================================================================================================================
-    
-    /**
-     * @return T[]
-     */
-    public function jsonSerialize() : array
-    {
-        return $this->items;
-    }
     
     
     
@@ -721,6 +696,36 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return in_array($needle, $this->items, true);
     }
     
+    
+    
+    
+    
+    
+    //==================================================================================================================
+    // Countable interface implementation
+    //==================================================================================================================
+    
+    /**
+     * Returns the number of items in the collection.
+     */
+    final public function count() : int
+    {
+        return count($this->items);
+    }
+    
+    
+    
+    //==================================================================================================================
+    // JsonSerializable interface implementation
+    //==================================================================================================================
+    
+    /**
+     * @return T[]
+     */
+    public function jsonSerialize() : array
+    {
+        return $this->items;
+    }
     
     
     
