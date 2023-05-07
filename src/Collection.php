@@ -12,6 +12,7 @@ use IteratorAggregate;
 use JsonSerializable;
 use LogicException;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
+use Mediagone\Types\Collections\Errors\InvalidCollectionOperationException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
@@ -654,7 +655,11 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         $items =  ($selector === null) ? $this->items : array_map($selector, $this->items);
         
         $count = (float)count($items);
-        return $count ? array_sum($items)/$count : 0.;
+        if ($count === 0.) {
+            throw InvalidCollectionOperationException::emptyCollection();
+        }
+        
+        return array_sum($items) / $count;
     }
     
     /**
