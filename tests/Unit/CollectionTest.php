@@ -5,6 +5,7 @@ namespace Tests\Mediagone\Types\Collections\Unit;
 use ArrayAccess;
 use BadMethodCallException;
 use Countable;
+use InvalidArgumentException;
 use IteratorAggregate;
 use JsonSerializable;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
@@ -44,6 +45,43 @@ final class CollectionTest extends TestCase
         self::assertSame($items, $collection->toArray());
     }
     
+    
+    
+    //==================================================================================================================
+    // Conversion methods
+    //==================================================================================================================
+    
+    // toCollection
+    
+    public function test_can_be_cast_to_another_collection() : void
+    {
+        $words = FakeMixedCollection::fromArray(['one', 'two', 'three']);
+        
+        $collection = $words->toCollection(StringCollection::class);
+        self::assertInstanceOf(StringCollection::class, $collection);
+        self::assertSame(['one', 'two', 'three'], $collection->toArray());
+    }
+    
+    public function test_cannot_be_cast_to_an_inexistant_collection() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        FakeMixedCollection::fromArray([])->toCollection('Unknown\Collection\Class');
+    }
+    
+    public function test_can_only_be_cast_to_a_class_that_extends_collection() : void
+    {
+        $this->expectException(TypeError::class);
+        
+        FakeMixedCollection::fromArray([])->toCollection(FakeFoo::class);
+    }
+    
+    public function test_throws_an_exception_if_invalid_items() : void
+    {
+        $this->expectException(TypeError::class);
+        
+        FakeMixedCollection::fromArray(['one', 'two', 3])->toCollection(StringCollection::class);
+    }
     
     
     //==================================================================================================================

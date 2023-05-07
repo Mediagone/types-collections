@@ -7,12 +7,14 @@ use ArrayIterator;
 use BadMethodCallException;
 use Closure;
 use Countable;
+use InvalidArgumentException;
 use IteratorAggregate;
 use JsonSerializable;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
+use TypeError;
 use function array_chunk;
 use function array_filter;
 use function array_map;
@@ -21,9 +23,11 @@ use function array_slice;
 use function array_sum;
 use function array_unshift;
 use function array_values;
+use function class_exists;
 use function count;
 use function end;
 use function in_array;
+use function is_a;
 use function max;
 use function min;
 use function shuffle;
@@ -130,6 +134,28 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $this->items;
     }
     
+    
+    /**
+     * Converts the collection into a new collection type, all items must be valid in the target collection.
+     * @template U of Collection
+     * @param class-string<U> $targetCollectionFqcn The target collection class-name to convert the current collection into.
+     * @return U A new collection of the specified type containing the current collection's items.
+     * @throws InvalidArgumentException Thrown if the specified collection class does not exist.
+     * @throws TypeError Thrown if the specified collection class does not extend the Collection base class.
+     * @throws TypeError Thrown if any item does not validate the target collection's validator constraints.
+     */
+    public function toCollection(string $targetCollectionFqcn) : Collection
+    {
+        if (! class_exists($targetCollectionFqcn)) {
+            throw new InvalidArgumentException('Unknown collection class "' . $targetCollectionFqcn.'".');
+        }
+        
+        if (! is_a($targetCollectionFqcn, __CLASS__, true)) {
+            throw new TypeError('The collection can only be cast to another Collection class.');
+        }
+        
+        return $targetCollectionFqcn::fromArray($this->items);
+    }
     
     
     
