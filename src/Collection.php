@@ -391,30 +391,8 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    /**
-     * Randomizes the order of the items in the collection.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function shuffle(): self
-    {
-        $collection = $this->getModifiableInstance();
-        shuffle($collection->items);
-        
-        return $collection;
-    }
     
     
-    /**
-     * Inverts the order of the items in the collection.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function reverse(): self
-    {
-        $collection = $this->getModifiableInstance();
-        $collection->items = array_reverse($this->items);
-        
-        return $collection;
-    }
     
     
     
@@ -584,6 +562,36 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
+    
+    
+    //==================================================================================================================
+    // Ordering methods
+    //==================================================================================================================
+    
+    /**
+     * Randomizes the order of the items in the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function shuffle(): self
+    {
+        $collection = $this->getModifiableInstance();
+        shuffle($collection->items);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Inverts the order of the items in the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function reverse(): self
+    {
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_reverse($this->items);
+        
+        return $collection;
+    }
     
     
     
