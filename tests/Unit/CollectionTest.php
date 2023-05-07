@@ -17,6 +17,8 @@ use Mediagone\Types\Collections\Typed\MixedCollection;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
+use Tests\Mediagone\Types\Collections\Fakes\FakeFooChild;
+use Tests\Mediagone\Types\Collections\Fakes\FakeFooChildCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFooCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeMixedCollection;
 use TypeError;
@@ -532,6 +534,64 @@ final class CollectionTest extends TestCase
         self::assertSame($collection, $sortedCollection);
         self::assertSame([$foo5, $foo4, $foo3, $foo2, $foo1], $sortedCollection->toArray());
     }
+    
+    // concat
+    
+    public function test_can_concatenate_two_collections() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $otherCollection = FakeMixedCollection::fromArray([3, 4]);
+        
+        // Collection should be mutable and items concatenated
+        $concatenatedCollection = $collection->concat($otherCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([1, 2, 3, 4], $concatenatedCollection->toArray());
+    }
+    
+    public function test_can_concatenate_two_empty_collections() : void
+    {
+        $collection = FakeMixedCollection::new();
+        $otherCollection = FakeMixedCollection::new();
+        
+        // Collection should be mutable
+        $concatenatedCollection = $collection->concat($otherCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([], $concatenatedCollection->toArray());
+    }
+    
+    public function test_can_concatenate_two_covariant_collections() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
+        $fooChild3 = new FakeFooChild('3');
+        $fooChild4 = new FakeFooChild('4');
+        $covariantCollection = FakeFooChildCollection::fromArray([$fooChild3, $fooChild4]);
+        
+        // Collection should be mutable
+        $concatenatedCollection = $collection->concat($covariantCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([$foo1, $foo2, $fooChild3, $fooChild4], $concatenatedCollection->toArray());
+    }
+    
+    public function test_cannot_concatenate_two_contravariant_collections() : void
+    {
+        $collection = FakeFooChildCollection::fromArray([new FakeFooChild('1'), new FakeFooChild('2')]);
+        $contravariantCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
+        
+        $this->expectException(TypeError::class);
+        $collection->concat($contravariantCollection);
+    }
+    
+    public function test_cannot_concatenate_two_collections_of_different_types() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $differentCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
+        
+        $this->expectException(TypeError::class);
+        $collection->concat($differentCollection);
+    }
+    
     
     
     //==================================================================================================================
