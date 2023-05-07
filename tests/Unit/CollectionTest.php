@@ -830,6 +830,59 @@ final class CollectionTest extends TestCase
     }
     
     
+    
+    //==================================================================================================================
+    // Query methods
+    //==================================================================================================================
+    
+    // join
+    
+    public function test_can_join_items() : void
+    {
+        $words = FakeMixedCollection::fromArray(['one', 'two', 'three', 'Three']);
+        $translations = FakeMixedCollection::fromArray([
+            (object)['word' => 'one', 'value' => 'un'],
+            (object)['word' => 'two', 'value' => 'deux'],
+            (object)['word' => 'two', 'value' => 'dos'],
+            (object)['word' => 'three', 'value' => 'trois'],
+            (object)['word' => 'Three', 'value' => 'Trois'],
+        ]);
+        
+        // Using the default equality comparer.
+        $results = $words->join(
+            $translations,
+            static fn($item) => $item,
+            static fn($item) => $item->word,
+            static fn($word, $translation) => (object)['word' => $word, 'value' => $translation->value]
+        );
+        self::assertCount(5, $results);
+        self::assertInstanceOf(MixedCollection::class, $results);
+        self::assertSame(['word' => 'one', 'value' => 'un'], (array)$results[0]);
+        self::assertSame(['word' => 'two', 'value' => 'deux'], (array)$results[1]);
+        self::assertSame(['word' => 'two', 'value' => 'dos'], (array)$results[2]);
+        self::assertSame(['word' => 'three', 'value' => 'trois'], (array)$results[3]);
+        self::assertSame(['word' => 'Three', 'value' => 'Trois'], (array)$results[4]);
+        
+        // Using a custom equality comparer.
+        $results = $words->join(
+            $translations,
+            static fn($item) => strtolower($item),
+            static fn($item) => strtolower($item->word),
+            static fn($word, $translation) => (object)['word' => $word, 'value' => $translation->value]
+        );
+        self::assertCount(7, $results);
+        self::assertInstanceOf(MixedCollection::class, $results);
+        self::assertSame(['word' => 'one', 'value' => 'un'], (array)$results[0]);
+        self::assertSame(['word' => 'two', 'value' => 'deux'], (array)$results[1]);
+        self::assertSame(['word' => 'two', 'value' => 'dos'], (array)$results[2]);
+        self::assertSame(['word' => 'three', 'value' => 'trois'], (array)$results[3]);
+        self::assertSame(['word' => 'three', 'value' => 'Trois'], (array)$results[4]);
+        self::assertSame(['word' => 'Three', 'value' => 'trois'], (array)$results[5]);
+        self::assertSame(['word' => 'Three', 'value' => 'Trois'], (array)$results[6]);
+    }
+    
+    
+    
     //==================================================================================================================
     // Quantifier methods tests
     //==================================================================================================================

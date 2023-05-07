@@ -15,6 +15,7 @@ use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
+use Mediagone\Types\Collections\Typed\MixedCollection;
 use TypeError;
 use function array_chunk;
 use function array_filter;
@@ -697,6 +698,39 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     {
         return array_values(array_map($selector, $this->items));
     }
+    
+    /**
+     * Correlates the items of two collection based on matching keys.
+     * @template U The type of the items in the other collection.
+     * @param Collection<U> $other The collection to join to the current collection.
+     * @param callable(T $item): mixed $keySelector A function to extract the join key from each item of the current collection.
+     * @param callable(U $item): mixed $otherKeySelector A function to extract the join key from each item of the other collection.
+     * @param callable(T $item, U $otherItem): mixed $resultSelector A function to create a result element from two matching elements.
+     * @param ?callable(mixed $key, mixed $otherKey): bool $comparer An equality comparer function to compare keys, or null to use the default equality comparer to compare keys.
+     * @return MixedCollection A MixedCollection that contains items obtained by performing an inner join on two collections.
+     */
+    public function join(Collection $other, callable $keySelector, callable $otherKeySelector, callable $resultSelector, ?callable $comparer = null) : MixedCollection
+    {
+        // If no comparer function is supplied, use the default equality comparer.
+        if ($comparer === null) {
+            $comparer = static fn($a, $b) => $a === $b;
+        }
+        
+        $results = [];
+        foreach ($this->items as $item) {
+            $key = $keySelector($item);
+            foreach ($other->items as $otherItem) {
+                $otherKey = $otherKeySelector($otherItem);
+                if ($comparer($key, $otherKey)) {
+                    $results[] = $resultSelector($item, $otherItem);
+                }
+            }
+        }
+        
+        return MixedCollection::fromArray($results);
+    }
+    
+    
     
     //==================================================================================================================
     // Traversal methods
