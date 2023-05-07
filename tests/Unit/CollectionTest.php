@@ -10,6 +10,7 @@ use IteratorAggregate;
 use JsonSerializable;
 use LogicException;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
+use Mediagone\Types\Collections\Errors\InvalidCollectionOperationException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
@@ -826,7 +827,7 @@ final class CollectionTest extends TestCase
         $selectedItems = $collection->select(static fn($item) => $item * 10);
         
         // Collection should be mutable and contain only unique items
-        self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems);
+        self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems->toArray());
     }
     
     
