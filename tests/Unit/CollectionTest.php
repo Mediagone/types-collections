@@ -8,6 +8,7 @@ use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
 use JsonSerializable;
+use LogicException;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
@@ -346,6 +347,33 @@ final class CollectionTest extends TestCase
     {
         $this->expectException(TypeError::class);
         FakeFooCollection::new()->prepend(new FakeBar());
+    }
+    
+    // remove
+    
+    public function test_can_remove_an_element() : void
+    {
+        $foo1 = new FakeFoo();
+        $foo2 = new FakeFoo();
+        $foo3 = new FakeFoo();
+        $foo4 = new FakeFoo();
+        $collection = FakeFooCollection::fromArray([$foo1, $foo2, $foo3, $foo4]);
+        
+        $result = $collection->remove($foo3);
+        
+        // Collection should be mutable
+        self::assertSame($collection, $result);
+        
+        // Item #3 should have been removed
+        self::assertSame([$foo1, $foo2, $foo4], $collection->toArray());
+    }
+    
+    public function test_throw_if_trying_to_remove_an_absent_element() : void
+    {
+        $this->expectException(LogicException::class);
+        
+        $collection = FakeFooCollection::fromArray([new FakeFoo(), new FakeFoo()]);
+        $result = $collection->remove(new FakeFoo());
     }
     
     // shuffle

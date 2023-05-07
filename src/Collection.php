@@ -10,6 +10,7 @@ use Countable;
 use InvalidArgumentException;
 use IteratorAggregate;
 use JsonSerializable;
+use LogicException;
 use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
@@ -19,7 +20,9 @@ use function array_chunk;
 use function array_filter;
 use function array_map;
 use function array_reverse;
+use function array_search;
 use function array_slice;
+use function array_splice;
 use function array_sum;
 use function array_unshift;
 use function array_values;
@@ -338,6 +341,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //   Depending on the implementation  of "getModifiableInstance" method, they return the current collection instance
     //   or a new one.
     //==================================================================================================================
+    
+    final public function remove($item): self
+    {
+        $index = array_search($item, $this->items, true);
+        if ($index === false) {
+            throw new LogicException('Item not in the collection');
+        }
+        
+        $collection = $this->getModifiableInstance();
+        array_splice($this->items, (int)$index, 1);
+        
+        return $collection;
+    }
     
     /**
      * Adds a value to the end of the collection.
