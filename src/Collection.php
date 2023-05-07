@@ -698,6 +698,26 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return array_values(array_map($selector, $this->items));
     }
     
+    //==================================================================================================================
+    // Traversal methods
+    //==================================================================================================================
+    
+    /**
+     * Applies a callback function to each item of the collection.
+     * @param callable(T $item): void $func A callback function to apply to each item of the input collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    public function forEach(callable $func): self
+    {
+        foreach ($this->items as $item) {
+            $func($item);
+        }
+        
+        return $this;
+    }
+    
+    
+    
     
     
     

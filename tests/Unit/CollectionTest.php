@@ -234,6 +234,21 @@ final class CollectionTest extends TestCase
         FakeMixedCollection::fromArray([1, 2, 3, 1])->singleOrDefault(0, fn($e) => $e === 1);
     }
     
+    // forEach
+    
+    public function test_can_execute_a_function_on_each_items() : void
+    {
+        $items = [];
+        $func = static function($item) use(&$items) {
+            $items[] = $item;
+        };
+        
+        FakeMixedCollection::fromArray([1, 3, 2, 4])->forEach($func);
+        self::assertSame(1, $items[0]);
+        self::assertSame(3, $items[1]);
+        self::assertSame(2, $items[2]);
+        self::assertSame(4, $items[3]);
+    }
     
     
     
