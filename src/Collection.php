@@ -442,7 +442,49 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
+    /**
+     * Computes the set intersection of two collections.
+     * @param Collection<T> $other A collection whose distinct items that also appear in the current collection will be returned.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function intersect(Collection $other)
+    {
+        $items = [];
+        foreach ($this->items as $item) {
+            if (in_array($item, $other->items, true)) {
+                $items[] = $item;
+            }
+        }
+        
+        $collection = $this->getModifiableInstance();
+        $collection->items = $items;
+        
+        return $collection;
+    }
     
+    
+    /**
+     * Computes the set difference of two sequences according to a specified key selector function.
+     * @param Collection<T> $other A collection whose items that also occur in the first collection will be removed from the returned sequence.
+     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
+     * @return static The current collection instance or a new instance if the collection is immutable.
+     */
+    public function intersectBy(Collection $other, callable $keySelector)
+    {
+        $items = [];
+        $otherKeys = array_map($keySelector, $other->items);
+        foreach ($this->items as $item) {
+            $key = $keySelector($item);
+            if (in_array($key, $otherKeys, true)) {
+                $items[] = $item;
+            }
+        }
+        
+        $collection = $this->getModifiableInstance();
+        $collection->items = $items;
+        
+        return $collection;
+    }
     
     
     /**
