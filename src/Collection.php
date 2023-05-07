@@ -613,6 +613,29 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    /**
+     * Groups the items of the collection according to a specified key selector function.
+     * @param callable(T $item):string $keySelector A function to extract the key for each item.
+     * @return static[] An array of new collections that contain the grouped items.
+     */
+    public function groupBy(callable $keySelector)
+    {
+        $groups = [];
+        
+        foreach ($this->items as $item) {
+            $key = (string)$keySelector($item);
+            if (! isset($groups[$key])) {
+                $groups[$key] = static::fromArray([]);
+            }
+            
+            $groups[$key]->append($item);
+        }
+        
+        return $groups;
+    }
+    
+    
+    
     //==================================================================================================================
     // Ordering methods
     //==================================================================================================================

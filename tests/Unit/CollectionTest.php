@@ -320,6 +320,25 @@ final class CollectionTest extends TestCase
     
     
     
+    //==================================================================================================================
+    // Grouping methods tests
+    //==================================================================================================================
+    
+    public function test_can_group_by_specified_key() : void
+    {
+        // Group values by parity (even/odd)
+        $groups = FakeMixedCollection::fromArray([1, 2, 3, 4])->groupBy(fn(int $item) => $item % 2 === 0 ? 'even' : 'odd');
+        self::assertSame([1, 3], $groups['odd']->toArray());
+        self::assertSame([2, 4], $groups['even']->toArray());
+        
+        // Group class instances' values by parity (even/odd)
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $groups = FakeFooCollection::fromArray([$foo1, $foo2, $foo3])->groupBy(fn(FakeFoo $item) => $item->getValue() % 2 === 0 ? 'even' : 'odd');
+        self::assertSame([$foo1, $foo3], $groups['odd']->toArray());
+        self::assertSame([$foo2], $groups['even']->toArray());
+    }
     
     
     
