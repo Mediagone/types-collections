@@ -19,8 +19,10 @@ use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
 use TypeError;
 use function array_chunk;
+use function array_diff;
 use function array_filter;
 use function array_map;
+use function array_merge;
 use function array_reverse;
 use function array_search;
 use function array_slice;
@@ -31,6 +33,7 @@ use function array_values;
 use function class_exists;
 use function count;
 use function end;
+use function get_class;
 use function in_array;
 use function is_a;
 use function max;
@@ -174,7 +177,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Determines whether the collection contains a specified item.
-     * If a comparer function is specified, determines whether the collection contains a specified item by using this equality comparer.
      * @param mixed $needle The value to locate in the collection.
      * @param ?callable(mixed $item, mixed $needle):bool $comparer An equality comparer to compare values, or 'null' to use the default equality comparer.
      * @return bool Returns 'true' if the source collection contains an item that has the specified value; otherwise, 'false'.
@@ -263,7 +265,12 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      */
     public function lastOrDefault($default, ?callable $predicate = null)
     {
-        $items = ($predicate === null) ? $this->items : array_values(array_filter($this->items, $predicate));
+        if ($predicate === null) {
+            $items = $this->items;
+        }
+        else {
+            $items = array_values(array_filter($this->items, $predicate));
+        }
         
         return empty($items) ? $default : end($items);
     }
@@ -390,6 +397,26 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
         $collection = $this->getModifiableInstance();
         array_unshift($collection->items, $item);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Concatenates a collection at the end of the current collection.
+     * @param Collection<T> $other The collection to concatenate to the current collection, must be an instance or a subclass of the current collection (covariant classes only).
+     * @return static The current collection instance or a new instance if the collection is immutable
+     * @throws TypeError Thrown if both collections to concatenate are not of the same type.
+     */
+    final public function concat($other): self
+    {
+        // Allow to use a more derived type (covariant) than current collection.
+        if (! is_a($other, get_class($this))) {
+            throw new TypeError('Invalid collection to concatenate ('.get_class($other).'), you can only concatenate covariant collections.');
+        }
+        
+        $collection = $this->getModifiableInstance();
+        $collection->items = array_merge($this->items, $other->items);
         
         return $collection;
     }
@@ -546,16 +573,9 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    //==================================================================================================================
-    // Partitioning methods
-    // Divides an input collection into two sections, without rearranging the items, and then returning one of the sections.
-    //==================================================================================================================
-    
-    // where
-    
     /**
-    /**
-     * Bypasses a specified number of items in the collection and then returns the remaining items (equivalent of "array_slice" PHP function with $offset = $count).
+     * Bypasses a specified number of items in the collection and then returns the remaining items.
+     * @note Equivalent to the "array_slice" PHP function: array_slice($array, offset: $count)
      * @param int $count The number of items to skip before returning the remaining items.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
@@ -569,16 +589,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     /**
-     * Returns a new enumerable collection that contains the items from source with the last count items of the source collection omitted.
-     * Returns a new enumerable collection that contains the last count items from source (equivalent of "array_slice" PHP function with $offset = items count - $count).
+     * Bypasses a specified number of items at the end of the collection and then returns the remaining items.
+     * @note Equivalent to the "array_slice" PHP function: array_slice($array, offset: count($array) - $count)
+     *   TODO Returns a new collection that contains the items from source with the last count items of the source collection omitted.
+     *   Returns a new collection that contains the items from the current collection except the last count omitted.
      * @param int $count The number of items to omit from the end of the collection.
      * @return static The current collection instance or a new instance if the collection is immutable.
      * TODO @ return static The current collection instance (or a new instance if the collection is immutable) that contains the items from source minus count items from the end of the collection.
      */
     public function skipLast(int $count) : self
     {
-        $collection = $this->getModifiableInstance();
         $length = max(0, count($this->items) - $count);
+        
+        $collection = $this->getModifiableInstance();
         $collection->items = array_slice($this->items, 0, $length);
         
         return $collection;
@@ -607,7 +630,8 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Returns a specified number of contiguous items from the start of a collection (equivalent of "array_slice" PHP function with $offset = 0, $length = $count).
+     * Returns a specified number of contiguous items from the start of the collection.
+     * @note Equivalent to the "array_slice" PHP function: array_slice($array, offset: 0, length: $count)
      * @param int $count The number of items to return.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
@@ -620,7 +644,8 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Returns a new enumerable collection that contains the last count items from source (equivalent of "array_slice" PHP function with $offset = items count - $count).
+     * Returns a new enumerable collection that contains the last count items from source.
+     * @note Equivalent to the "array_slice" PHP function: array_slice($array, offset: count($array) - $count)
      * @param int $count The number of items to return.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
@@ -653,6 +678,24 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
+    
+    
+    /**
+     * Splits the items of the collection into chunks of specified size.
+     * @param positive-int $size The maximum size of each chunk.
+     * @return static[] An array of new collections that contain the split items.
+     */
+    public function chunk(int $size) : array
+    {
+        $chunks = array_chunk($this->items, $size);
+        
+        $collections = [];
+        foreach ($chunks as $chunk) {
+            $collections[] = static::fromArray($chunk);
+        }
+        
+        return $collections;
+    }
     
     
     /**
@@ -708,6 +751,60 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
+    /**
+     * Sorts the items of the collection in ascending order according to a key.
+     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sort(): self
+    {
+        $collection = $this->getModifiableInstance();
+        sort($this->items);
+        //usort($this->items, static fn($a, $b) => $a <=> $b);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Sorts the items of the collection in descending order according to a key.
+     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sortDescending(): self
+    {
+        $collection = $this->getModifiableInstance();
+        usort($this->items, static fn($a, $b) => $b <=> $a);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Sorts the items of the collection in ascending order according to a key.
+     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sortBy(callable $keySelector): self
+    {
+        $collection = $this->getModifiableInstance();
+        usort($this->items, static fn($a, $b) => $keySelector($a) <=> $keySelector($b));
+        
+        return $collection;
+    }
+    
+    /**
+     * Sorts the items of the collection in descending order according to a key.
+     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sortByDescending(callable $keySelector): self
+    {
+        $collection = $this->getModifiableInstance();
+        usort($this->items, static fn($a, $b) => -($keySelector($a) <=> $keySelector($b)));
+        
+        return $collection;
+    }
     
     
     
@@ -787,18 +884,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Computes the sum of a collection of numeric values (equivalent of "array_reduce" PHP function).
-     * @param mixed $seed The initial accumulator value.
+     * Applies an accumulator function over a sequence.
+     * @note Equivalent to the "array_reduce" PHP function.
+     * @param mixed $initial The initial accumulator value.
      * @param callable(mixed $total, T $item):mixed $accumulator An accumulator function to be invoked on each item.
-     * @return mixed The sum of the values in the collection.
+     * @return mixed The final accumulator value.
      */
-    public function aggregate($seed, callable $accumulator)
+    public function aggregate($initial, callable $accumulator)
     {
         foreach ($this->items as $item) {
-            $seed = $accumulator($seed, $item);
+            $initial = $accumulator($initial, $item);
         }
         
-        return $seed;
+        return $initial;
     }
     
     
@@ -870,59 +968,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    /**
-     * Sorts the items of the collection in ascending order according to a key.
-     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function sort(): self
-    {
-        $collection = $this->getModifiableInstance();
-        sort($this->items);
-        
-        return $collection;
-    }
-    
-    
-    /**
-     * Sorts the items of the collection in descending order according to a key.
-     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function sortDescending(): self
-    {
-        $collection = $this->getModifiableInstance();
-        usort($this->items, static fn($a, $b) => $b <=> $a);
-        
-        return $collection;
-    }
-    
-    
-    /**
-     * Sorts the items of the collection in ascending order according to a key.
-     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function sortBy(callable $keySelector): self
-    {
-        $collection = $this->getModifiableInstance();
-        usort($this->items, static fn($a, $b) => $keySelector($a) <=> $keySelector($b));
-        
-        return $collection;
-    }
-    
-    /**
-     * Sorts the items of the collection in descending order according to a key.
-     * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function sortByDescending(callable $keySelector): self
-    {
-        $collection = $this->getModifiableInstance();
-        usort($this->items, static fn($a, $b) => -($keySelector($a) <=> $keySelector($b)));
-        
-        return $collection;
-    }
     
     
     
@@ -936,35 +981,27 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     
     /**
-     * Splits the items of the collection into chunks of size at most size.
-     * @param positive-int $size The maximum size of each chunk.
-     * @return static[] An array of collections that contain the split items.
      * Determines whether all items of the collection satisfy a condition.
      * @param callable(mixed $item):bool $predicate A function to test each item for a condition.
-     * @return bool true if every item of the collection passes the test in the specified predicate, or if the sequence is empty; otherwise, false.
+     * @return bool Returns 'true' if every item of the collection passes the test in the specified predicate, or if the sequence is empty; otherwise, false.
      */
-    public function chunk(int $size) : array
     public function all(callable $predicate) : bool
     {
-        $chunks = array_chunk($this->items, $size);
         foreach ($this->items as $item) {
             if ($predicate($item) === false) {
                 return false;
             }
         }
         
-        $collections = [];
-        foreach ($chunks as $chunk) {
-            $collections[] = static::fromArray($chunk);
         return true;
     }
     
     
     /**
-     * Determines whether a collection contains any items.
-     * If a predicate function is specified, determines whether any item of the collection satisfies a condition.
+     * Determines whether a collection contains any items; if a predicate function is specified, determines whether any item of the collection satisfies a condition.
+     * @note Equivalent to the "is_empty" PHP function, if called without a predicate function.
      * @param ?callable(mixed $item):bool $predicate A function to test each item for a condition.
-     * @return bool true if the collection contains any items; otherwise, false.
+     * @return bool Returns 'true' if the collection contains any items; otherwise, false.
      */
     public function any(?callable $predicate = null) : bool
     {
@@ -986,10 +1023,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
-    //==================================================================================================================
-    // Partitioning methods
-    // Divides an input collection into two sections, without rearranging the items, and then returning one of the sections.
-    //==================================================================================================================
     
     
     
