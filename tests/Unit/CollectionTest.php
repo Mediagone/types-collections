@@ -470,6 +470,32 @@ final class CollectionTest extends TestCase
         self::assertSame([$foo1, $foo2, $foo3, $foo4], $uniqueCollection->toArray());
     }
     
+    // sort
+    
+    public function test_can_sort_primitive_type_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([5, 2, 1, 3, 4]);
+        self::assertNotSame([1, 2, 3, 4, 5], $collection->toArray());
+        
+        // Collection should be mutable and items reordered
+        $sortedCollection = $collection->sort();
+        self::assertSame($collection, $sortedCollection);
+        self::assertSame([1, 2, 3, 4, 5], $sortedCollection->toArray());
+    }
+    
+    // sortDescending
+    
+    public function test_can_sort_descending_primitive_type_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([5, 2, 1, 3, 4]);
+        self::assertNotSame([1, 2, 3, 4, 5], $collection->toArray());
+        
+        // Collection should be mutable and items reordered
+        $sortedCollection = $collection->sortDescending();
+        self::assertSame($collection, $sortedCollection);
+        self::assertSame([5, 4, 3, 2, 1], $sortedCollection->toArray());
+    }
+    
     
     //==================================================================================================================
     // Partitioning methods tests

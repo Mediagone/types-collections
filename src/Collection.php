@@ -34,6 +34,8 @@ use function is_a;
 use function max;
 use function min;
 use function shuffle;
+use function sort;
+use function usort;
 
 
 /**
@@ -748,6 +750,34 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         }
         
         return !empty($this->items);
+    }
+    
+    
+    /**
+     * Sorts the items of the collection in ascending order according to a key.
+     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sort(): self
+    {
+        $collection = $this->getModifiableInstance();
+        sort($this->items);
+        
+        return $collection;
+    }
+    
+    
+    /**
+     * Sorts the items of the collection in descending order according to a key.
+     * @note To compare objects or class instances, it is recommended to use the "sortBy" method instead since the result of comparing incomparable values is undefined and should not be relied upon.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function sortDescending(): self
+    {
+        $collection = $this->getModifiableInstance();
+        usort($this->items, static fn($a, $b) => $b <=> $a);
+        
+        return $collection;
     }
     
     
