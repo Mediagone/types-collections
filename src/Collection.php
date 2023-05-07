@@ -331,45 +331,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    /**
-     * Returns the minimum value of the collection (transformed by the specified selector function, if specified).
-     * @param ?callable(mixed $item=):mixed $selector A transform function invoked on each item of the collection before computing the minimum resulting value.
-     * @return mixed The minimum value in the collection.
-     * @throws EmptyCollectionException: Thrown if the collection is empty.
-     */
-    public function min(?callable $selector = null)
-    {
-        if (empty($this->items)) {
-            throw new EmptyCollectionException();
-        }
-        
-        if ($selector === null) {
-            return min($this->items);
-        }
-        
-        return min(array_map($selector, $this->items));
-    }
-    
-    /**
-     * Returns the maximum value of the collection (transformed by the specified selector function, if specified).
-     * @param ?callable(mixed $item=):mixed $selector A transform function invoked on each item of the collection before computing the maximum resulting value.
-     * @return mixed The maximum value in the collection.
-     * @throws EmptyCollectionException: Thrown if the collection is empty.
-     */
-    public function max(?callable $selector = null)
-    {
-        if (empty($this->items)) {
-            throw new EmptyCollectionException();
-        }
-        
-        if ($selector === null) {
-            return max($this->items);
-        }
-        
-        return max(array_map($selector, $this->items));
-    }
-    
-    
     
     //==================================================================================================================
     // Mutation methods
@@ -617,6 +578,44 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     
     /**
+     * Returns the minimum value of the collection (transformed by the specified selector function, if specified).
+     * @param ?callable(mixed $item):mixed $selector A transform function invoked on each item of the collection before computing the minimum resulting value.
+     * @return mixed The minimum value in the collection.
+     * @throws EmptyCollectionException: Thrown if the collection is empty.
+     */
+    public function min(?callable $selector = null)
+    {
+        if (empty($this->items)) {
+            throw new EmptyCollectionException();
+        }
+        
+        if ($selector === null) {
+            return min($this->items);
+        }
+        
+        return min(array_map($selector, $this->items));
+    }
+    
+    /**
+     * Returns the maximum value of the collection (transformed by the specified selector function, if specified).
+     * @param ?callable(mixed $item):mixed $selector A transform function invoked on each item of the collection before computing the maximum resulting value.
+     * @return mixed The maximum value in the collection.
+     * @throws EmptyCollectionException: Thrown if the collection is empty.
+     */
+    public function max(?callable $selector = null)
+    {
+        if (empty($this->items)) {
+            throw new EmptyCollectionException();
+        }
+        
+        if ($selector === null) {
+            return max($this->items);
+        }
+        
+        return max(array_map($selector, $this->items));
+    }
+    
+    /**
      * Computes the average of the collection values.
      * @param ?callable(mixed $item):float $selector A transform function invoked on each item of the collection before computing the average resulting value.
      * @return float The average value of the collection.
@@ -728,6 +727,13 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
+    
+    
+    
+    //==================================================================================================================
+    // Partitioning methods
+    // Divides an input collection into two sections, without rearranging the items, and then returning one of the sections.
+    //==================================================================================================================
     
     
     

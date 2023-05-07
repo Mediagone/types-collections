@@ -12,6 +12,7 @@ use Mediagone\Types\Collections\Errors\EmptyCollectionException;
 use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
+use Mediagone\Types\Collections\Typed\MixedCollection;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
@@ -230,39 +231,6 @@ final class CollectionTest extends TestCase
         FakeMixedCollection::fromArray([1, 2, 3, 1])->singleOrDefault(0, fn($e) => $e === 1);
     }
     
-    // min
-    
-    public function test_can_return_min_element() : void
-    {
-        // Without custom selector function
-        self::assertSame(1, FakeMixedCollection::fromArray([3, 2, 1])->min());
-        // With custom selector function
-        self::assertSame(-3, FakeMixedCollection::fromArray([1, 3, 2])->min(fn($e) => -$e));
-    }
-    
-    public function test_throws_exception_trying_to_return_min_element_of_an_empty_collection() : void
-    {
-        $this->expectException(EmptyCollectionException::class);
-        
-        FakeMixedCollection::fromArray([])->min();
-    }
-    
-    // max
-    
-    public function test_can_return_max_element() : void
-    {
-        // Without custom selector function
-        self::assertSame(3, FakeMixedCollection::fromArray([1, 3, 2])->max());
-        // With custom selector function
-        self::assertSame(-1, FakeMixedCollection::fromArray([1, 3, 2])->max(fn($e) => -$e));
-    }
-    
-    public function test_throws_exception_trying_to_return_max_element_of_an_empty_collection() : void
-    {
-        $this->expectException(EmptyCollectionException::class);
-        
-        FakeMixedCollection::fromArray([])->max();
-    }
     
     
     
@@ -607,6 +575,42 @@ final class CollectionTest extends TestCase
     //==================================================================================================================
     // Aggregation methods tests
     //==================================================================================================================
+    
+    // min
+    
+    public function test_can_return_min_element() : void
+    {
+        // Without custom selector function
+        self::assertSame(1, FakeMixedCollection::fromArray([3, 2, 1])->min());
+        // With custom selector function
+        self::assertSame(-3, FakeMixedCollection::fromArray([1, 3, 2])->min(fn($e) => -$e));
+    }
+    
+    public function test_throws_exception_trying_to_return_min_element_of_an_empty_collection() : void
+    {
+        $this->expectException(EmptyCollectionException::class);
+        
+        FakeMixedCollection::fromArray([])->min();
+    }
+    
+    
+    // max
+    
+    public function test_can_return_max_element() : void
+    {
+        // Without custom selector function
+        self::assertSame(3, FakeMixedCollection::fromArray([1, 3, 2])->max());
+        // With custom selector function
+        self::assertSame(-1, FakeMixedCollection::fromArray([1, 3, 2])->max(fn($e) => -$e));
+    }
+    
+    public function test_throws_exception_trying_to_return_max_element_of_an_empty_collection() : void
+    {
+        $this->expectException(EmptyCollectionException::class);
+        
+        FakeMixedCollection::fromArray([])->max();
+    }
+    
     
     public function test_can_calculate_average() : void
     {
