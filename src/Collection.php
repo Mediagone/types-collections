@@ -19,7 +19,6 @@ use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
 use TypeError;
 use function array_chunk;
-use function array_diff;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -113,7 +112,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * Generates a new empty boolean collection.
      * @return static
      */
-    public static function new()
+    public static function new(): Collection
     {
         return static::fromArray([]);
     }
@@ -124,7 +123,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param T[] $items
      * @return static
      */
-    public static function fromArray(array $items)
+    public static function fromArray(array $items): Collection
     {
         return new static($items);
     }
@@ -353,6 +352,12 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //   or a new one.
     //==================================================================================================================
     
+    /**
+     * Remove the specified value from the collection.
+     * @param T $item The value to remove from the collection. 
+     * @throws LogicException Thrown if the collection doesn't contain the specified value.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
     final public function remove($item): self
     {
         $index = array_search($item, $this->items, true);
@@ -430,7 +435,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param Collection<T> $other A collection whose items that also occur in the first collection will be removed from the returned sequence.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
-    public function except(Collection $other)
+    public function except(Collection $other): self
     {
         $items = [];
         foreach ($this->items as $item) {
@@ -451,7 +456,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
-    public function exceptBy(Collection $other, callable $keySelector)
+    public function exceptBy(Collection $other, callable $keySelector): self
     {
         $items = [];
         $otherKeys = array_map($keySelector, $other->items);
@@ -474,7 +479,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param Collection<T> $other A collection whose distinct items that also appear in the current collection will be returned.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
-    public function intersect(Collection $other)
+    public function intersect(Collection $other): self
     {
         $items = [];
         foreach ($this->items as $item) {
@@ -496,7 +501,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param callable(T $item):mixed $keySelector A function to extract the key for each item.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
-    public function intersectBy(Collection $other, callable $keySelector)
+    public function intersectBy(Collection $other, callable $keySelector): self
     {
         $items = [];
         $otherKeys = array_map($keySelector, $other->items);
@@ -519,7 +524,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param callable(T $item):bool $predicate A function to test each item for a condition.
      * @return static The current collection instance or a new instance if the collection is immutable.
      */
-    public function where(callable $predicate)
+    public function where(callable $predicate): self
     {
         $collection = $this->getModifiableInstance();
         $collection->items = array_values(array_filter($this->items, $predicate));
@@ -703,7 +708,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param callable(T $item):string $keySelector A function to extract the key for each item.
      * @return static[] An array of new collections that contain the grouped items.
      */
-    public function groupBy(callable $keySelector)
+    public function groupBy(callable $keySelector): array
     {
         $groups = [];
         
@@ -886,9 +891,10 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Applies an accumulator function over a sequence.
      * @note Equivalent to the "array_reduce" PHP function.
+     * @template A The type of the accumulator result.
      * @param mixed $initial The initial accumulator value.
-     * @param callable(mixed $total, T $item):mixed $accumulator An accumulator function to be invoked on each item.
-     * @return mixed The final accumulator value.
+     * @param callable(mixed $total, T $item):A $accumulator An accumulator function to be invoked on each item.
+     * @return A The final accumulator value.
      */
     public function aggregate($initial, callable $accumulator)
     {
@@ -919,10 +925,11 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Correlates the items of two collection based on matching keys.
      * @template U The type of the items in the other collection.
+     * @template R The type of the joined result.
      * @param Collection<U> $other The collection to join to the current collection.
      * @param callable(T $item): mixed $keySelector A function to extract the join key from each item of the current collection.
      * @param callable(U $item): mixed $otherKeySelector A function to extract the join key from each item of the other collection.
-     * @param callable(T $item, U $otherItem): mixed $resultSelector A function to create a result element from two matching elements.
+     * @param callable(T $item, U $otherItem): R $resultSelector A function to create a result element from two matching elements.
      * @param ?callable(mixed $key, mixed $otherKey): bool $comparer An equality comparer function to compare keys, or null to use the default equality comparer to compare keys.
      * @return MixedCollection A MixedCollection that contains items obtained by performing an inner join on two collections.
      */

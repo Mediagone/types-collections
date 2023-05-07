@@ -49,7 +49,7 @@ abstract class ClassCollection extends Collection
      * Generates a new empty class collection.
      * @return static
      */
-    final public static function new()
+    final public static function new(): self
     {
         return static::fromArray([]);
     }
