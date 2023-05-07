@@ -496,6 +496,43 @@ final class CollectionTest extends TestCase
         self::assertSame([5, 4, 3, 2, 1], $sortedCollection->toArray());
     }
     
+    // sortBy
+    
+    public function test_can_sort_items_by_key() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo3 = new FakeFoo('3');
+        $foo2 = new FakeFoo('2');
+        $foo5 = new FakeFoo('5');
+        $foo4 = new FakeFoo('4');
+        $collection = FakeFooCollection::fromArray([$foo1, $foo5, $foo3, $foo4, $foo2]);
+        self::assertSame([$foo1, $foo5, $foo3, $foo4, $foo2], $collection->toArray());
+        
+        // Collection should be mutable and items reordered
+        $sortedCollection = $collection->sortBy(fn(FakeFoo $item) => $item->getValue());
+        self::assertSame($collection, $sortedCollection);
+        self::assertSame([$foo1, $foo2, $foo3, $foo4, $foo5], $sortedCollection->toArray());
+    }
+    
+    // sortByDescending
+    
+    public function test_can_sort_items_by_key_descending() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $items = [$foo1, $foo5, $foo3, $foo4, $foo2];
+        $collection = FakeFooCollection::fromArray($items);
+        self::assertSame([$foo1, $foo5, $foo3, $foo4, $foo2], $collection->toArray());
+        
+        // Collection should be mutable and items reordered
+        $sortedCollection = $collection->sortByDescending(fn(FakeFoo $item) => $item->getValue());
+        self::assertSame($collection, $sortedCollection);
+        self::assertSame([$foo5, $foo4, $foo3, $foo2, $foo1], $sortedCollection->toArray());
+    }
+    
     
     //==================================================================================================================
     // Partitioning methods tests
