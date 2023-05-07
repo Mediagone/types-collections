@@ -136,12 +136,12 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     //==================================================================================================================
-    // Element operations (return a single, specific item from the collection)
+    // Element operations
     //==================================================================================================================
     
     /**
      * Returns the first item of the collection (that satisfies a condition, if a predicate function is specified).
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return T The first item in the collection.
      * @throws EmptyCollectionException Thrown if the collection is empty.
      * @throws NoPredicateResultException Thrown if no item satisfies the condition in predicate.
@@ -163,7 +163,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Returns the first item of the collection (that satisfies a condition, if a predicate function is specified) or a default value if no such item is found.
      * @param ?T $default The default value to return if no item is found.
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return ?T The first item of the collection or the specified default value.
      */
     public function firstOrDefault($default, ?callable $predicate = null)
@@ -178,7 +178,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Returns the last item of the collection (that satisfies a condition, if a predicate function is specified).
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return T The last item of the collection.
      * @throws EmptyCollectionException Thrown if the collection is empty.
      * @throws NoPredicateResultException Thrown if no item satisfies the condition in predicate.
@@ -200,7 +200,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Returns the last item of the collection (that satisfies a condition, if a predicate function is specified) or the specified default value if no such item is found.
      * @param ?T $default The default value to return if no item is found.
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return ?T The last item of the collection or the specified default value.
      */
     public function lastOrDefault($default, ?callable $predicate = null)
@@ -213,7 +213,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Returns the only item of the collection (that satisfies a specified condition, if a predicate function is specified) or throws an exception if more than one item exists.
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return T The single item of the collection.
      * @throws EmptyCollectionException: Thrown if the collection is empty.
      * @throws TooManyItemsException: Thrown if the collection contains more than one item.
@@ -249,7 +249,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Returns the only item of the collection (that satisfies a specified condition, if a predicate function is specified) or throws an exception if more than one item exists.
      * @param ?T $default The default value to return if no item is found.
-     * @param ?callable(T $item=):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return ?T The single item of the collection or the specified default value.
      * @throws TooManyItemsException: Thrown if the collection contains more than one item.
      * @throws TooManyPredicateResultsException: Thrown if more than one item satisfies the condition in predicate.
@@ -358,6 +358,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
         $collection = $this->getModifiableInstance();
         array_unshift($collection->items, $item);
+        
         return $collection;
     }
     
@@ -568,6 +569,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * Computes the average of the collection values.
      * @param ?callable(mixed $item):float $selector A transform function invoked on each item of the collection before computing the average resulting value.
      * @return float The average value of the collection.
+     * @throws InvalidCollectionOperationException Thrown if the collection contains no items.
      */
     public function average(?callable $selector = null): float
     {
@@ -610,7 +612,8 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Projects each item of the collection into a new form and return an array that contains the transformed items of the collection.
-     * @param callable(T $item=):mixed $selector A transform function to apply to each item of the collection.
+     * @note Equivalent to "array_map" PHP function.
+     * @param callable(T $item):mixed $selector A transform function to apply to each item of the collection.
      * @return mixed[] The transformed items of the collection.
      */
     public function select(callable $selector) : array
