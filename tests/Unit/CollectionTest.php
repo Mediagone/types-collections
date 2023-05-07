@@ -15,6 +15,7 @@ use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
+use Mediagone\Types\Collections\Typed\StringCollection;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
@@ -25,6 +26,7 @@ use Tests\Mediagone\Types\Collections\Fakes\FakeMixedCollection;
 use TypeError;
 use function iterator_to_array;
 use function json_encode;
+use function strtolower;
 
 
 /**
@@ -87,6 +89,7 @@ final class CollectionTest extends TestCase
         
         FakeMixedCollection::fromArray(['one', 'two', 3])->toCollection(StringCollection::class);
     }
+    
     
     
     //==================================================================================================================
@@ -437,6 +440,7 @@ final class CollectionTest extends TestCase
         self::assertNotSame($items, $collection->toArray()); // todo?
     }
     
+    // reverse
     
     public function test_can_reverse_items() : void
     {
@@ -444,9 +448,9 @@ final class CollectionTest extends TestCase
         $collection = FakeMixedCollection::fromArray($items);
         
         // Collection should be mutable and items should have been reordered (reverse order)
-        $sortedCollection = $collection->reverse();
-        self::assertSame($collection, $sortedCollection);
-        self::assertSame([4, 3, 2, 1], $sortedCollection->toArray());
+        $reversedCollection = $collection->reverse();
+        self::assertSame($collection, $reversedCollection);
+        self::assertSame([4, 3, 2, 1], $reversedCollection->toArray());
     }
     
     // distinct
@@ -835,7 +839,6 @@ final class CollectionTest extends TestCase
         self::assertSame([2, 3, 4], $resultCollection->toArray());
     }
     
-    
     // chunk
     
     public function test_can_chunk_items() : void
@@ -896,6 +899,8 @@ final class CollectionTest extends TestCase
     }
     
     
+    // average
+    
     public function test_can_calculate_average() : void
     {
         // With primitive types
@@ -909,6 +914,16 @@ final class CollectionTest extends TestCase
         $items = [new FakeFoo('1'), new FakeFoo('2.5'), new FakeFoo('3')];
         self::assertSame(6.5/3, FakeMixedCollection::fromArray($items)->average($selector));
     }
+    
+    public function test_cannot_calculate_average_of_an_empty_collection() : void
+    {
+        $this->expectException(InvalidCollectionOperationException::class);
+        
+        FakeMixedCollection::fromArray([])->average();
+    }
+    
+    
+    // sum
     
     public function test_can_calculate_sum() : void
     {
@@ -1051,6 +1066,40 @@ final class CollectionTest extends TestCase
         $foo = new FakeFoo();
         self::assertTrue(FakeMixedCollection::fromArray([new FakeFoo(), $foo])->contains($foo));
         self::assertFalse(FakeMixedCollection::fromArray([new FakeFoo(), new FakeFoo()])->contains(new FakeFoo()));
+    }
+    
+    public function test_if_contains_using_custom_equality_comparer() : void
+    {
+        $items = [new FakeFoo('A'), new FakeFoo('B')];
+        // Different class instances are not equal by default...
+        self::assertFalse(FakeMixedCollection::fromArray($items)->contains(
+            new FakeFoo('B')
+        ));
+        // ...but a custom comparer can compare instance's value instead
+        $comparer = static fn (FakeFoo $foo, string $needle) => $foo->getValue() === $needle;
+        self::assertTrue(FakeMixedCollection::fromArray($items)->contains('B', $comparer));
+        self::assertFalse(FakeMixedCollection::fromArray($items)->contains('C', $comparer));
+    }
+    
+    
+    
+    //==================================================================================================================
+    // Misc
+    //==================================================================================================================
+    
+    
+    
+    public function test_can_chain_many_operations() : void
+    {
+        $items = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        $collection = FakeMixedCollection::fromArray($items);
+        $resultCollection = $collection
+            ->where(fn($item) => $item > 1)
+            ->append(1)
+            ->select(static fn($item) => $item * 10);
+        
+        self::assertNotSame($collection, $resultCollection);
+        self::assertSame([20, 30, 40, 50, 60, 70, 80, 90, 10], $resultCollection->toArray());
     }
     
 }
