@@ -626,6 +626,55 @@ final class CollectionTest extends TestCase
         self::assertSame([2, 4, 6], $filteredCollection->toArray());
     }
     
+    // except
+    
+    public function test_can_except_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $other = FakeMixedCollection::fromArray([2, 4, 6]);
+        $filteredCollection = $collection->except($other);
+       
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([1, 3, 5], $filteredCollection->toArray());
+    }
+    
+    public function test_can_except_items_with_class_instances() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
+        $filteredCollection = $collection->except($other);
+       
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo2, $foo4, $foo5], $filteredCollection->toArray());
+    }
+    
+    // exceptBy
+    
+    public function test_can_except_items_by_key() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
+        $filteredCollection = $collection->exceptBy($other, fn(FakeFoo $item) => $item->getValue());
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo2, $foo4], $filteredCollection->toArray());
+    }
+    
     // skip
     
     public function test_can_skip_items() : void
