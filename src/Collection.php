@@ -146,9 +146,9 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Converts the collection into a new collection type, all items must be valid in the target collection.
-     * @template U of Collection
-     * @param class-string<U> $targetCollectionFqcn The target collection class-name to convert the current collection into.
-     * @return U A new collection of the specified type containing the current collection's items.
+     * @template TOther of Collection
+     * @param class-string<TOther> $targetCollectionFqcn The target collection class-name to convert the current collection into.
+     * @return TOther A new collection of the specified type containing the current collection's items.
      * @throws InvalidArgumentException Thrown if the specified collection class does not exist.
      * @throws TypeError Thrown if the specified collection class does not extend the Collection base class.
      * @throws TypeError Thrown if any item does not validate the target collection's validator constraints.
@@ -177,7 +177,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Determines whether the collection contains a specified item.
      * @param mixed $needle The value to locate in the collection.
-     * @param ?callable(mixed $item, mixed $needle):bool $comparer An equality comparer to compare values, or 'null' to use the default equality comparer.
+     * @param ?callable(T $item, mixed $needle):bool $comparer An equality comparer to compare values, or 'null' to use the default equality comparer.
      * @return bool Returns 'true' if the source collection contains an item that has the specified value; otherwise, 'false'.
      */
     public function contains($needle, ?callable $comparer = null) : bool
@@ -373,7 +373,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Adds a value to the end of the collection.
-     * @param mixed $item The value to append to the collection.
+     * @param T $item The value to append to the collection.
      * @return static The current collection instance or a new instance if the collection is immutable
      */
     final public function append($item): self
@@ -390,7 +390,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Adds a value to the beginning of the collection.
-     * @param mixed $item The value to prepend to the collection.
+     * @param T $item The value to prepend to the collection.
      * @return Collection<T> The current collection
      * @return static The current collection instance or a new instance if the collection is immutable
      */
@@ -820,8 +820,9 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Returns the minimum value of the collection (transformed by the specified selector function, if specified).
-     * @param ?callable(mixed $item):mixed $selector A transform function invoked on each item of the collection before computing the minimum resulting value.
-     * @return mixed The minimum value in the collection.
+     * @template TValue The return type of the selector function.
+     * @param ?callable(T $item):TValue $selector A transform function invoked on each item of the collection before computing the minimum resulting value.
+     * @return T|TValue The minimum value in the collection.
      * @throws EmptyCollectionException: Thrown if the collection is empty.
      */
     public function min(?callable $selector = null)
@@ -839,8 +840,9 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Returns the maximum value of the collection (transformed by the specified selector function, if specified).
-     * @param ?callable(mixed $item):mixed $selector A transform function invoked on each item of the collection before computing the maximum resulting value.
-     * @return mixed The maximum value in the collection.
+     * @template TValue The return type of the selector function.
+     * @param ?callable(T $item):TValue $selector A transform function invoked on each item of the collection before computing the maximum resulting value.
+     * @return T|TValue The maximum value in the collection.
      * @throws EmptyCollectionException: Thrown if the collection is empty.
      */
     public function max(?callable $selector = null)
@@ -858,7 +860,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Computes the average of the collection values.
-     * @param ?callable(mixed $item):float $selector A transform function invoked on each item of the collection before computing the average resulting value.
+     * @param ?callable(T $item):float $selector A transform function invoked on each item of the collection before computing the average resulting value.
      * @return float The average value of the collection.
      * @throws InvalidCollectionOperationException Thrown if the collection contains no items.
      */
@@ -876,7 +878,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Computes the sum of a collection of numeric values.
-     * @param ?callable(mixed $item):float $selector A transform function to apply to each item of the input collection.
+     * @param ?callable(T $item):float $selector A transform function to apply to each item of the input collection.
      * @return float The sum of the values in the collection.
      */
     public function sum(?callable $selector = null): float
@@ -891,10 +893,10 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Applies an accumulator function over a sequence.
      * @note Equivalent to the "array_reduce" PHP function.
-     * @template A The type of the accumulator result.
-     * @param mixed $initial The initial accumulator value.
-     * @param callable(mixed $total, T $item):A $accumulator An accumulator function to be invoked on each item.
-     * @return A The final accumulator value.
+     * @template TValue The type of the accumulator result.
+     * @param TValue $initial The initial accumulator value.
+     * @param callable(TValue $total, T $item):TValue $accumulator An accumulator function to be invoked on each item.
+     * @return TValue The final accumulator value.
      */
     public function aggregate($initial, callable $accumulator)
     {
@@ -924,13 +926,15 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Correlates the items of two collection based on matching keys.
-     * @template U The type of the items in the other collection.
-     * @template R The type of the joined result.
-     * @param Collection<U> $other The collection to join to the current collection.
-     * @param callable(T $item): mixed $keySelector A function to extract the join key from each item of the current collection.
-     * @param callable(U $item): mixed $otherKeySelector A function to extract the join key from each item of the other collection.
-     * @param callable(T $item, U $otherItem): R $resultSelector A function to create a result element from two matching elements.
-     * @param ?callable(mixed $key, mixed $otherKey): bool $comparer An equality comparer function to compare keys, or null to use the default equality comparer to compare keys.
+     * @template TOther The type of the items in the other collection.
+     * @template TResult The type of the joined result.
+     * @template TKey The return type of the keySelector for the current collection.
+     * @template TKeyOther The return type of the keySelector for the other collection.
+     * @param Collection<TOther> $other The collection to join to the current collection.
+     * @param callable(T $item): TKey $keySelector A function to extract the join key from each item of the current collection.
+     * @param callable(TOther $item): TKeyOther $otherKeySelector A function to extract the join key from each item of the other collection.
+     * @param callable(T $item, TOther $otherItem): TResult $resultSelector A function to create a result element from two matching elements.
+     * @param ?callable(TKey $key, TKeyOther $otherKey): bool $comparer An equality comparer function to compare keys, or null to use the default equality comparer to compare keys.
      * @return MixedCollection A MixedCollection that contains items obtained by performing an inner join on two collections.
      */
     public function join(Collection $other, callable $keySelector, callable $otherKeySelector, callable $resultSelector, ?callable $comparer = null) : MixedCollection
@@ -989,7 +993,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Determines whether all items of the collection satisfy a condition.
-     * @param callable(mixed $item):bool $predicate A function to test each item for a condition.
+     * @param callable(T $item):bool $predicate A function to test each item for a condition.
      * @return bool Returns 'true' if every item of the collection passes the test in the specified predicate, or if the sequence is empty; otherwise, false.
      */
     public function all(callable $predicate) : bool
@@ -1007,7 +1011,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Determines whether a collection contains any items; if a predicate function is specified, determines whether any item of the collection satisfies a condition.
      * @note Equivalent to the "is_empty" PHP function, if called without a predicate function.
-     * @param ?callable(mixed $item):bool $predicate A function to test each item for a condition.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return bool Returns 'true' if the collection contains any items; otherwise, false.
      */
     public function any(?callable $predicate = null) : bool
