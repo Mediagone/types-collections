@@ -6,6 +6,20 @@
 
 This package provides **full-featured collections** for primitive types, and generic classes to build your own strongly-typed collections. Each collection has chainable methods to perform traversal, filter and projection operations.
 
+
+Example:
+```php
+$collection = IntCollection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    ->where(fn($item) => $item > 4)
+    ->append(10)
+    ->select(static fn($item) => $item * 10);
+
+$collection->toArray(); // returns: [50, 60, 70, 80, 90, 100]
+```
+
+
+
+
 Chapters:
 1. Available collections
     - [Primitive-type collections](#primitive-collections)
