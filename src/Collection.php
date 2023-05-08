@@ -19,6 +19,7 @@ use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
 use TypeError;
 use function array_chunk;
+use function array_fill;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -127,6 +128,18 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     public static function fromArray(array $items): Collection
     {
         return new static($items);
+    }
+    
+    
+    /**
+     * Generates a collection containing one repeated value.
+     * @param T $value The value to be repeated.
+     * @param int $count The number of times to repeat the value in the generated collection.
+     * @return static A new collection that contains a repeated value.
+     */
+    public static function fromRepeatedValue($value, int $count)
+    {
+        return self::fromArray( array_fill(0, $count, $value));
     }
     
     

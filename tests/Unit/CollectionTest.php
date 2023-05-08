@@ -52,6 +52,13 @@ final class CollectionTest extends TestCase
         self::assertSame($items, $collection->toArray());
     }
     
+    public function test_can_be_created_from_repeated_value() : void
+    {
+        $collection = MixedCollection::fromRepeatedValue('foo', 3);
+        
+        self::assertSame(['foo', 'foo', 'foo'], $collection->toArray());
+    }
+    
     
     
     //==================================================================================================================
