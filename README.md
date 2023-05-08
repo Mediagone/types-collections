@@ -9,12 +9,19 @@ This package provides **full-featured collections** for primitive types, and gen
 
 Example:
 ```php
-$collection = IntCollection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    ->where(fn($item) => $item > 4)
+IntCollection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    ->where(fn($n) => $n > 4)
     ->append(10)
-    ->select(static fn($item) => $item * 10);
+    ->select(static fn($n) => $n * 10)
+    ->forEach(static fn(int $n) => var_dump($n));
 
-$collection->toArray(); // returns: [50, 60, 70, 80, 90, 100]
+// Outputs:
+//   int(50)
+//   int(60)
+//   int(70)
+//   int(80)
+//   int(90)
+//   int(100)
 ```
 
 
