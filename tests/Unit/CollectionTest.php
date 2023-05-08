@@ -24,6 +24,8 @@ use Tests\Mediagone\Types\Collections\Fakes\FakeFooChildCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFooCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeMixedCollection;
 use TypeError;
+use ValueError;
+use function array_unique;
 use function iterator_to_array;
 use function json_encode;
 use function strtolower;
@@ -244,6 +246,70 @@ final class CollectionTest extends TestCase
         
         FakeMixedCollection::fromArray([1, 2, 3, 1])->singleOrDefault(0, fn($e) => $e === 1);
     }
+    
+    // random
+    
+    public function test_can_return_a_single_random_element() : void
+    {
+        $items = [1, 2, 3, 4, 5];
+        $collection = FakeMixedCollection::fromArray($items);
+        
+        $randomItems = $collection->random();
+        
+        // The collection should be unchanged.
+        self::assertSame([1, 2, 3, 4, 5], $collection->toArray());
+        self::assertCount(1, $randomItems);
+        self::assertContains($randomItems[0], $collection->toArray());
+    }
+    
+    public function test_can_return_multiple_random_elements() : void
+    {
+        $items = [1, 2, 3, 4, 5];
+        $collection = FakeMixedCollection::fromArray($items);
+        
+        $randomItems = $collection->random(3);
+        
+        // The collection should be unchanged.
+        self::assertSame([1, 2, 3, 4, 5], $collection->toArray());
+        self::assertCount(3, $randomItems);
+        self::assertCount(3, array_unique($randomItems));
+        self::assertContains($randomItems[0], $items);
+        self::assertContains($randomItems[1], $items);
+        self::assertContains($randomItems[2], $items);
+    }
+    
+    public function test_cannot_return_random_element_from_an_empty_collection() : void
+    {
+        $this->expectException(EmptyCollectionException::class);
+        
+        $collection = FakeMixedCollection::new();
+        $collection->random();
+    }
+    
+    public function test_cannot_return_zero_random_elements() : void
+    {
+        $this->expectException(ValueError::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $collection->random(0);
+    }
+    
+    public function test_cannot_return_negative_count_of_random_elements() : void
+    {
+        $this->expectException(ValueError::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $collection->random(-1);
+    }
+    
+    public function test_cannot_return_more_random_elements_than_items_in_the_collection() : void
+    {
+        $this->expectException(ValueError::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $collection->random(6);
+    }
+    
     
     // forEach
     

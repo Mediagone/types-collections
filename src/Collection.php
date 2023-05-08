@@ -18,11 +18,13 @@ use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
 use TypeError;
+use ValueError;
 use function array_chunk;
 use function array_fill;
 use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_rand;
 use function array_reverse;
 use function array_search;
 use function array_slice;
@@ -355,6 +357,39 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         }
         
         return $items[0];
+    }
+    
+    
+    /**
+     * Returns one or more random items of the collection.
+     * @param int<1, max> $count The number of unique random items to get (must be less or equal to the collection's items count).
+     * @return T[] The picked random items.
+     * @throws ValueError Thrown if the $count argument is 
+     * @throws EmptyCollectionException: Thrown if the collection is empty.
+     */
+    public function random(int $count = 1, bool $preserveCollectionOrder = false): array
+    {
+        if (empty($this->items)) {
+            throw new EmptyCollectionException();
+        }
+        
+        // Get random indexes
+        $randomIndexes = array_rand($this->items, $count);
+        if (! is_array($randomIndexes)) {
+            $randomIndexes = [$randomIndexes];
+        }
+        
+        if (! $preserveCollectionOrder) {
+            // Shuffle the indexes, since they are always returned in the order they were present in the original array.
+            shuffle($randomIndexes);
+        }
+        
+        $results = [];
+        foreach ($randomIndexes as $index) {
+            $results[] = $this->items[$index];
+        }
+        
+        return $results;
     }
     
     
