@@ -16,6 +16,7 @@ use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
 use Mediagone\Types\Collections\Typed\StringCollection;
+use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
@@ -107,6 +108,14 @@ final class CollectionTest extends TestCase
         self::assertSame($foo2, $collection[1]);
         
         self::assertFalse(isset($collection[2]));
+    }
+    
+    public function test_cannot_use_ArrayAccess_offsetGet_with_invalid_offset() : void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $collection[2];
     }
     
     public function test_cannot_use_ArrayAccess_offsetSet() : void
