@@ -17,6 +17,7 @@ use Mediagone\Types\Collections\Errors\NoPredicateResultException;
 use Mediagone\Types\Collections\Errors\TooManyItemsException;
 use Mediagone\Types\Collections\Errors\TooManyPredicateResultsException;
 use Mediagone\Types\Collections\Typed\MixedCollection;
+use OutOfBoundsException;
 use TypeError;
 use ValueError;
 use function array_chunk;
@@ -723,44 +724,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    /**
-     * Splits the items of the collection into chunks of specified size.
-     * @param positive-int $size The maximum size of each chunk.
-     * @return static[] An array of new collections that contain the split items.
-     */
-    public function chunk(int $size) : array
-    {
-        $chunks = array_chunk($this->items, $size);
-        
-        $collections = [];
-        foreach ($chunks as $chunk) {
-            $collections[] = static::fromArray($chunk);
-        }
-        
-        return $collections;
-    }
     
-    
-    /**
-     * Groups the items of the collection according to a specified key selector function.
-     * @param callable(T $item):string $keySelector A function to extract the key for each item.
-     * @return static[] An array of new collections that contain the grouped items.
-     */
-    public function groupBy(callable $keySelector): array
-    {
-        $groups = [];
-        
-        foreach ($this->items as $item) {
-            $key = (string)$keySelector($item);
-            if (! isset($groups[$key])) {
-                $groups[$key] = static::fromArray([]);
-            }
-            
-            $groups[$key]->append($item);
-        }
-        
-        return $groups;
-    }
     
     
     
@@ -853,6 +817,15 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     // Aggregation methods
     //==================================================================================================================
+
+    /**
+     * Returns the number of items in a collection.
+     * @return int The number of items in the input collection.
+     */
+    public function count(): int
+    {
+        return count($this->items);
+    }
     
     /**
      * Returns the minimum value of the collection (transformed by the specified selector function, if specified).
@@ -950,6 +923,23 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     
     /**
+     * Splits the items of the collection into chunks of specified size.
+     * @param positive-int $size The maximum size of each chunk.
+     * @return static[] An array of new collections that contain the split items.
+     */
+    public function chunk(int $size) : array
+    {
+        $chunks = array_chunk($this->items, $size);
+        
+        $collections = [];
+        foreach ($chunks as $chunk) {
+            $collections[] = static::fromArray($chunk);
+        }
+        
+        return $collections;
+    }
+    
+    /**
      * Projects each item of the collection into a new form and return an array that contains the transformed items of the collection.
      * @note Equivalent to "array_map" PHP function.
      * @param callable(T $item):mixed $selector A transform function to apply to each item of the collection.
@@ -990,6 +980,27 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
+     * Groups the items of the collection according to a specified key selector function.
+     * @param callable(T $item):string $keySelector A function to extract the key for each item.
+     * @return static[] An array of new collections that contain the grouped items.
+     */
+    public function groupBy(callable $keySelector): array
+    {
+        $groups = [];
+        
+        foreach ($this->items as $item) {
+            $key = (string)$keySelector($item);
+            if (! isset($groups[$key])) {
+                $groups[$key] = static::fromArray([]);
+            }
+            
+            $groups[$key]->append($item);
+        }
+        
+        return $groups;
+    }
+    
+    /**
      * Correlates the items of two collection based on matching keys.
      * @template TOther The type of the items in the other collection.
      * @template TResult The type of the joined result.
@@ -1021,26 +1032,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         }
         
         return MixedCollection::fromArray($results);
-    }
-    
-    
-    
-    //==================================================================================================================
-    // Traversal methods
-    //==================================================================================================================
-    
-    /**
-     * Applies a callback function to each item of the collection.
-     * @param callable(T $item): void $func A callback function to apply to each item of the input collection.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    public function forEach(callable $func): self
-    {
-        foreach ($this->items as $item) {
-            $func($item);
-        }
-        
-        return $this;
     }
     
     
@@ -1091,22 +1082,30 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     //==================================================================================================================
-    // Countable interface implementation
+    // Traversal methods
     //==================================================================================================================
     
     /**
-     * Returns the number of items in the collection.
+     * Applies a callback function to each item of the collection.
+     * @param callable(T $item): void $func A callback function to apply to each item of the input collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
      */
-    final public function count() : int
+    public function forEach(callable $func): self
     {
-        return count($this->items);
+        foreach ($this->items as $item) {
+            $func($item);
+        }
+        
+        return $this;
     }
     
     
     
     //==================================================================================================================
-    // JsonSerializable interface implementation
+    // Misc methods
     //==================================================================================================================
+    
+    // JsonSerializable interface implementation
     
     /**
      * @return T[]
@@ -1117,10 +1116,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    
-    //==================================================================================================================
     // IteratorAggregate interface implementation
-    //==================================================================================================================
     
     /**
      * @return ArrayIterator<int, T>
@@ -1131,29 +1127,39 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    
-    //==================================================================================================================
     // ArrayAccess interface implementation
-    //==================================================================================================================
     
     final public function offsetExists($offset) : bool
     {
         return isset($this->items[$offset]);
     }
     
+    /**
+     * @throws OutOfBoundsException Thrown if the specified offset is greater than the number of items in the collection.
+     */
     #[\ReturnTypeWillChange]
     final public function offsetGet($offset)
     {
-        return $this->items[$offset] ?? null;
+        if (!isset($this->items[$offset])) {
+            throw new OutOfBoundsException("The index ($offset) is not defined, there is only ".count($this->items)." items in the collection.");
+        }
+        
+        return $this->items[$offset];
     }
     
+    /**
+     * @throws BadMethodCallException The "set" operation is not allowed on collections.
+     */
     final public function offsetSet($offset, $value) : void
     {
-        throw new BadMethodCallException("Direct modification of collection's items is not allowed, use appropriate methods instead.");
+        throw new BadMethodCallException("Direct modification of a collection's items is not allowed, use appropriate methods instead.");
     }
     
+    /**
+     * @throws BadMethodCallException The "unset" operation is not allowed on collections.
+     */
     final public function offsetUnset($offset) : void
     {
-        throw new BadMethodCallException("Direct removal of collection's items is not allowed, use appropriate methods instead.");
+        throw new BadMethodCallException("Direct removal of a collection's items is not allowed, use appropriate methods instead.");
     }
 }
