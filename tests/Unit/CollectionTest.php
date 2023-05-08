@@ -64,6 +64,70 @@ final class CollectionTest extends TestCase
     
     
     //==================================================================================================================
+    // Interfaces implementation tests
+    //==================================================================================================================
+    
+    public function test_implements_IteratorAggregate() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 3, 2]);
+        
+        self::assertInstanceOf(IteratorAggregate::class, $collection);
+        self::assertSame([1, 3, 2], iterator_to_array($collection->getIterator()));
+    }
+    
+    public function test_implements_JsonSerializable() : void
+    {
+        $collection = FakeMixedCollection::fromArray([false, true, '2', 3, 4.56]);
+        
+        self::assertInstanceOf(JsonSerializable::class, $collection);
+        self::assertSame('[false,true,"2",3,4.56]', json_encode($collection, JSON_THROW_ON_ERROR));
+    }
+    
+    public function test_implements_Countable() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        
+        self::assertInstanceOf(Countable::class, $collection);
+        self::assertCount(2, $collection);
+    }
+    
+    
+    public function test_implements_ArrayAccess() : void
+    {
+        $foo1 = new FakeFoo();
+        $foo2 = new FakeFoo();
+        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
+        
+        self::assertInstanceOf(ArrayAccess::class, $collection);
+        
+        self::assertTrue(isset($collection[0]));
+        self::assertSame($foo1, $collection[0]);
+        
+        self::assertTrue(isset($collection[1]));
+        self::assertSame($foo2, $collection[1]);
+        
+        self::assertFalse(isset($collection[2]));
+    }
+    
+    public function test_cannot_use_ArrayAccess_offsetSet() : void
+    {
+        $this->expectException(BadMethodCallException::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $collection[2] = 3;
+    }
+    
+    public function test_cannot_use_ArrayAccess_offsetUnset() : void
+    {
+        $this->expectException(BadMethodCallException::class);
+        
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        unset($collection[0]);
+    }
+    
+    
+    
+    //==================================================================================================================
     // Conversion methods
     //==================================================================================================================
     
@@ -104,6 +168,183 @@ final class CollectionTest extends TestCase
     //==================================================================================================================
     // Element operations tests
     //==================================================================================================================
+    
+    // contains
+    
+    public function test_if_contains_a_value() : void
+    {
+        // Primitive types
+        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->contains(2));
+        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->contains(4));
+        self::assertTrue(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('b'));
+        self::assertFalse(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('d'));
+        // Class instances
+        $foo = new FakeFoo();
+        self::assertTrue(FakeMixedCollection::fromArray([new FakeFoo(), $foo])->contains($foo));
+        self::assertFalse(FakeMixedCollection::fromArray([new FakeFoo(), new FakeFoo()])->contains(new FakeFoo()));
+    }
+    
+    public function test_if_contains_using_custom_equality_comparer() : void
+    {
+        $items = [new FakeFoo('A'), new FakeFoo('B')];
+        // Different class instances are not equal by default...
+        self::assertFalse(FakeMixedCollection::fromArray($items)->contains(
+            new FakeFoo('B')
+        ));
+        // ...but a custom comparer can compare instance's value instead
+        $comparer = static fn (FakeFoo $foo, string $needle) => $foo->getValue() === $needle;
+        self::assertTrue(FakeMixedCollection::fromArray($items)->contains('B', $comparer));
+        self::assertFalse(FakeMixedCollection::fromArray($items)->contains('C', $comparer));
+    }
+    
+    // append
+    
+    public function test_can_append() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->append('item4');
+        
+        // Collection should be mutable and contains the new element
+        self::assertSame($collection, $result);
+        self::assertSame(['item1', 'item2', 'item3', 'item4'], $collection->toArray());
+    }
+    
+    public function test_can_append_multiple_items() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->append('item4', 'item5');
+        
+        // Collection should be mutable and contains the new elements
+        self::assertSame($collection, $result);
+        self::assertSame(['item1', 'item2', 'item3', 'item4', 'item5'], $collection->toArray());
+    }
+    
+    public function test_cannot_append_element_of_invalid_type() : void
+    {
+        $this->expectException(TypeError::class);
+        FakeFooCollection::new()->append(new FakeBar());
+    }
+    
+    // prepend
+    
+    public function test_can_prepend() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->prepend('item0');
+        
+        // Collection should be mutable and contains the new element
+        self::assertSame($collection, $result);
+        self::assertSame(['item0', 'item1', 'item2', 'item3'], $collection->toArray());
+    }
+    
+    public function test_can_prepend_multiple_items() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->prepend('item-1', 'item0');
+        
+        // Collection should be mutable and contains the new elements
+        self::assertSame($collection, $result);
+        self::assertSame(['item-1', 'item0', 'item1', 'item2', 'item3'], $collection->toArray());
+    }
+    
+    public function test_cannot_prepend_element_of_invalid_type() : void
+    {
+        $this->expectException(TypeError::class);
+        FakeFooCollection::new()->prepend(new FakeBar());
+    }
+    
+    // concat
+    
+    public function test_can_concatenate_two_collections() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $otherCollection = FakeMixedCollection::fromArray([3, 4]);
+        
+        // Collection should be mutable and items concatenated
+        $concatenatedCollection = $collection->concat($otherCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([1, 2, 3, 4], $concatenatedCollection->toArray());
+    }
+    
+    public function test_can_concatenate_two_empty_collections() : void
+    {
+        $collection = FakeMixedCollection::new();
+        $otherCollection = FakeMixedCollection::new();
+        
+        // Collection should be mutable
+        $concatenatedCollection = $collection->concat($otherCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([], $concatenatedCollection->toArray());
+    }
+    
+    public function test_can_concatenate_two_covariant_collections() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
+        $fooChild3 = new FakeFooChild('3');
+        $fooChild4 = new FakeFooChild('4');
+        $covariantCollection = FakeFooChildCollection::fromArray([$fooChild3, $fooChild4]);
+        
+        // Collection should be mutable
+        $concatenatedCollection = $collection->concat($covariantCollection);
+        self::assertSame($collection, $concatenatedCollection);
+        self::assertSame([$foo1, $foo2, $fooChild3, $fooChild4], $concatenatedCollection->toArray());
+    }
+    
+    public function test_cannot_concatenate_two_contravariant_collections() : void
+    {
+        $collection = FakeFooChildCollection::fromArray([new FakeFooChild('1'), new FakeFooChild('2')]);
+        $contravariantCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
+        
+        $this->expectException(TypeError::class);
+        $collection->concat($contravariantCollection);
+    }
+    
+    public function test_cannot_concatenate_two_collections_of_different_types() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2]);
+        $differentCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
+        
+        $this->expectException(TypeError::class);
+        $collection->concat($differentCollection);
+    }
+    
+    // remove
+    
+    public function test_can_remove_an_element() : void
+    {
+        $foo1 = new FakeFoo();
+        $foo2 = new FakeFoo();
+        $foo3 = new FakeFoo();
+        $foo4 = new FakeFoo();
+        $collection = FakeFooCollection::fromArray([$foo1, $foo2, $foo3, $foo4]);
+        
+        $result = $collection->remove($foo3);
+        
+        // Collection should be mutable
+        self::assertSame($collection, $result);
+        
+        // Item #3 should have been removed
+        self::assertSame([$foo1, $foo2, $foo4], $collection->toArray());
+    }
+    
+    public function test_throw_if_trying_to_remove_an_absent_element() : void
+    {
+        $this->expectException(LogicException::class);
+        
+        $collection = FakeFooCollection::fromArray([new FakeFoo(), new FakeFoo()]);
+        $result = $collection->remove(new FakeFoo());
+    }
+    
     
     // first
     
@@ -247,6 +488,7 @@ final class CollectionTest extends TestCase
         FakeMixedCollection::fromArray([1, 2, 3, 1])->singleOrDefault(0, fn($e) => $e === 1);
     }
     
+    
     // random
     
     public function test_can_return_a_single_random_element() : void
@@ -311,207 +553,17 @@ final class CollectionTest extends TestCase
     }
     
     
-    // forEach
     
-    public function test_can_execute_a_function_on_each_items() : void
-    {
-        $items = [];
-        $func = static function($item) use(&$items) {
-            $items[] = $item;
-        };
-        
-        FakeMixedCollection::fromArray([1, 3, 2, 4])->forEach($func);
-        self::assertSame(1, $items[0]);
-        self::assertSame(3, $items[1]);
-        self::assertSame(2, $items[2]);
-        self::assertSame(4, $items[3]);
-    }
+    //==================================================================================================================
+    // Partitioning methods tests
+    //==================================================================================================================
+    
     
     
     
     //==================================================================================================================
-    // Interfaces implementation tests
+    // Ordering methods tests
     //==================================================================================================================
-    
-    public function test_implements_IteratorAggregate() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 3, 2]);
-        
-        self::assertInstanceOf(IteratorAggregate::class, $collection);
-        self::assertSame([1, 3, 2], iterator_to_array($collection->getIterator()));
-    }
-    
-    public function test_implements_JsonSerializable() : void
-    {
-        $collection = FakeMixedCollection::fromArray([false, true, '2', 3, 4.56]);
-        
-        self::assertInstanceOf(JsonSerializable::class, $collection);
-        self::assertSame('[false,true,"2",3,4.56]', json_encode($collection, JSON_THROW_ON_ERROR));
-    }
-    
-    
-    public function test_implements_Countable() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2]);
-        
-        self::assertInstanceOf(Countable::class, $collection);
-        self::assertCount(2, $collection);
-    }
-    
-    
-    public function test_implements_ArrayAccess() : void
-    {
-        $foo1 = new FakeFoo();
-        $foo2 = new FakeFoo();
-        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
-        
-        self::assertInstanceOf(ArrayAccess::class, $collection);
-        
-        self::assertTrue(isset($collection[0]));
-        self::assertSame($foo1, $collection[0]);
-        
-        self::assertTrue(isset($collection[1]));
-        self::assertSame($foo2, $collection[1]);
-        
-        self::assertFalse(isset($collection[2]));
-    }
-    
-    
-    public function test_cannot_use_ArrayAccess_offsetSet() : void
-    {
-        $this->expectException(BadMethodCallException::class);
-        
-        $collection = FakeMixedCollection::fromArray([1, 2]);
-        $collection[2] = 3;
-    }
-    
-    
-    public function test_cannot_use_ArrayAccess_offsetUnset() : void
-    {
-        $this->expectException(BadMethodCallException::class);
-        
-        $collection = FakeMixedCollection::fromArray([1, 2]);
-        unset($collection[0]);
-    }
-    
-    
-    
-    //==================================================================================================================
-    // Grouping methods tests
-    //==================================================================================================================
-    
-    public function test_can_group_by_specified_key() : void
-    {
-        // Group values by parity (even/odd)
-        $groups = FakeMixedCollection::fromArray([1, 2, 3, 4])->groupBy(fn(int $item) => $item % 2 === 0 ? 'even' : 'odd');
-        self::assertSame([1, 3], $groups['odd']->toArray());
-        self::assertSame([2, 4], $groups['even']->toArray());
-        
-        // Group class instances' values by parity (even/odd)
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $foo3 = new FakeFoo('3');
-        $groups = FakeFooCollection::fromArray([$foo1, $foo2, $foo3])->groupBy(fn(FakeFoo $item) => $item->getValue() % 2 === 0 ? 'even' : 'odd');
-        self::assertSame([$foo1, $foo3], $groups['odd']->toArray());
-        self::assertSame([$foo2], $groups['even']->toArray());
-    }
-    
-    
-    
-    //==================================================================================================================
-    // Mutation methods tests
-    //==================================================================================================================
-    
-    // append
-    
-    public function test_can_append() : void
-    {
-        $items = ['item1', 'item2', 'item3'];
-        $collection = StringCollection::fromArray($items);
-        
-        $result = $collection->append('item4');
-        
-        // Collection should be mutable and contains the new element
-        self::assertSame($collection, $result);
-        self::assertSame(['item1', 'item2', 'item3', 'item4'], $collection->toArray());
-    }
-    
-    public function test_can_append_multiple_items() : void
-    {
-        $items = ['item1', 'item2', 'item3'];
-        $collection = StringCollection::fromArray($items);
-        
-        $result = $collection->append('item4', 'item5');
-        
-        // Collection should be mutable and contains the new elements
-        self::assertSame($collection, $result);
-        self::assertSame(['item1', 'item2', 'item3', 'item4', 'item5'], $collection->toArray());
-    }
-    
-    public function test_cannot_append_element_of_invalid_type() : void
-    {
-        $this->expectException(TypeError::class);
-        FakeFooCollection::new()->append(new FakeBar());
-    }
-    
-    // prepend
-    
-    public function test_can_prepend() : void
-    {
-        $items = ['item1', 'item2', 'item3'];
-        $collection = StringCollection::fromArray($items);
-        
-        $result = $collection->prepend('item0');
-        
-        // Collection should be mutable and contains the new element
-        self::assertSame($collection, $result);
-        self::assertSame(['item0', 'item1', 'item2', 'item3'], $collection->toArray());
-    }
-    
-    public function test_can_prepend_multiple_items() : void
-    {
-        $items = ['item1', 'item2', 'item3'];
-        $collection = StringCollection::fromArray($items);
-        
-        $result = $collection->prepend('item-1', 'item0');
-        
-        // Collection should be mutable and contains the new elements
-        self::assertSame($collection, $result);
-        self::assertSame(['item-1', 'item0', 'item1', 'item2', 'item3'], $collection->toArray());
-    }
-    
-    public function test_cannot_prepend_element_of_invalid_type() : void
-    {
-        $this->expectException(TypeError::class);
-        FakeFooCollection::new()->prepend(new FakeBar());
-    }
-    
-    // remove
-    
-    public function test_can_remove_an_element() : void
-    {
-        $foo1 = new FakeFoo();
-        $foo2 = new FakeFoo();
-        $foo3 = new FakeFoo();
-        $foo4 = new FakeFoo();
-        $collection = FakeFooCollection::fromArray([$foo1, $foo2, $foo3, $foo4]);
-        
-        $result = $collection->remove($foo3);
-        
-        // Collection should be mutable
-        self::assertSame($collection, $result);
-        
-        // Item #3 should have been removed
-        self::assertSame([$foo1, $foo2, $foo4], $collection->toArray());
-    }
-    
-    public function test_throw_if_trying_to_remove_an_absent_element() : void
-    {
-        $this->expectException(LogicException::class);
-        
-        $collection = FakeFooCollection::fromArray([new FakeFoo(), new FakeFoo()]);
-        $result = $collection->remove(new FakeFoo());
-    }
     
     // shuffle
     
@@ -671,178 +723,11 @@ final class CollectionTest extends TestCase
         self::assertSame([$foo5, $foo4, $foo3, $foo2, $foo1], $sortedCollection->toArray());
     }
     
-    // concat
-    
-    public function test_can_concatenate_two_collections() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2]);
-        $otherCollection = FakeMixedCollection::fromArray([3, 4]);
-        
-        // Collection should be mutable and items concatenated
-        $concatenatedCollection = $collection->concat($otherCollection);
-        self::assertSame($collection, $concatenatedCollection);
-        self::assertSame([1, 2, 3, 4], $concatenatedCollection->toArray());
-    }
-    
-    public function test_can_concatenate_two_empty_collections() : void
-    {
-        $collection = FakeMixedCollection::new();
-        $otherCollection = FakeMixedCollection::new();
-        
-        // Collection should be mutable
-        $concatenatedCollection = $collection->concat($otherCollection);
-        self::assertSame($collection, $concatenatedCollection);
-        self::assertSame([], $concatenatedCollection->toArray());
-    }
-    
-    public function test_can_concatenate_two_covariant_collections() : void
-    {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
-        $fooChild3 = new FakeFooChild('3');
-        $fooChild4 = new FakeFooChild('4');
-        $covariantCollection = FakeFooChildCollection::fromArray([$fooChild3, $fooChild4]);
-        
-        // Collection should be mutable
-        $concatenatedCollection = $collection->concat($covariantCollection);
-        self::assertSame($collection, $concatenatedCollection);
-        self::assertSame([$foo1, $foo2, $fooChild3, $fooChild4], $concatenatedCollection->toArray());
-    }
-    
-    public function test_cannot_concatenate_two_contravariant_collections() : void
-    {
-        $collection = FakeFooChildCollection::fromArray([new FakeFooChild('1'), new FakeFooChild('2')]);
-        $contravariantCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
-        
-        $this->expectException(TypeError::class);
-        $collection->concat($contravariantCollection);
-    }
-    
-    public function test_cannot_concatenate_two_collections_of_different_types() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2]);
-        $differentCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
-        
-        $this->expectException(TypeError::class);
-        $collection->concat($differentCollection);
-    }
-    
     
     
     //==================================================================================================================
     // Partitioning methods tests
     //==================================================================================================================
-    
-    // where
-    
-    public function test_can_where_items() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
-        $filteredCollection = $collection->where(fn($item) => $item % 2 === 0);
-        
-        // Collection should be mutable and contain only even values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([2, 4, 6], $filteredCollection->toArray());
-    }
-    
-    // except
-    
-    public function test_can_except_items() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
-        $other = FakeMixedCollection::fromArray([2, 4, 6]);
-        $filteredCollection = $collection->except($other);
-       
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([1, 3, 5], $filteredCollection->toArray());
-    }
-    
-    public function test_can_except_items_with_class_instances() : void
-    {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $foo3 = new FakeFoo('3');
-        $foo4 = new FakeFoo('4');
-        $foo5 = new FakeFoo('5');
-        $foo5b = new FakeFoo('5');
-        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
-        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
-        $filteredCollection = $collection->except($other);
-       
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([$foo2, $foo4, $foo5], $filteredCollection->toArray());
-    }
-    
-    // exceptBy
-    
-    public function test_can_except_items_by_key() : void
-    {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $foo3 = new FakeFoo('3');
-        $foo4 = new FakeFoo('4');
-        $foo5 = new FakeFoo('5');
-        $foo5b = new FakeFoo('5');
-        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
-        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
-        $filteredCollection = $collection->exceptBy($other, fn(FakeFoo $item) => $item->getValue());
-        
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([$foo2, $foo4], $filteredCollection->toArray());
-    }
-    
-    // intersect
-    
-    public function test_can_intersect_collections() : void
-    {
-        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
-        $other = FakeMixedCollection::fromArray([2, 4, 6]);
-        $filteredCollection = $collection->intersect($other);
-        
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([2, 4], $filteredCollection->toArray());
-    }
-    
-    public function test_can_intersect_collections_with_class_instances() : void
-    {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $foo3 = new FakeFoo('3');
-        $foo4 = new FakeFoo('4');
-        $foo5 = new FakeFoo('5');
-        $foo5b = new FakeFoo('5');
-        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
-        $other = FakeMixedCollection::fromArray([$foo3, $foo5b]);
-        $filteredCollection = $collection->intersect($other);
-        
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([$foo3], $filteredCollection->toArray());
-    }
-    
-    // intersectBy
-    
-    public function test_can_intersect_collections_by_key() : void
-    {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $foo3 = new FakeFoo('3');
-        $foo4 = new FakeFoo('4');
-        $foo5 = new FakeFoo('5');
-        $foo5b = new FakeFoo('5');
-        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
-        $other = FakeMixedCollection::fromArray([$foo3, $foo5b]);
-        $filteredCollection = $collection->intersectBy($other, static fn(FakeFoo $item) => $item->getValue());
-        
-        // Collection should be mutable and contain only desired values
-        self::assertSame($collection, $filteredCollection);
-        self::assertSame([$foo3, $foo5], $filteredCollection->toArray());
-    }
     
     // skip
     
@@ -936,22 +821,114 @@ final class CollectionTest extends TestCase
         self::assertSame([2, 3, 4], $resultCollection->toArray());
     }
     
-    // chunk
+    // where
     
-    public function test_can_chunk_items() : void
+    public function test_can_where_items() : void
     {
         $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
-        $chunks = $collection->chunk(4);
+        $filteredCollection = $collection->where(fn($item) => $item % 2 === 0);
         
-        // Original collection should not have changed
-        self::assertSame([1, 2, 3, 4, 5, 6], $collection->toArray());
+        // Collection should be mutable and contain only even values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([2, 4, 6], $filteredCollection->toArray());
+    }
+    
+    // except
+    
+    public function test_can_except_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $other = FakeMixedCollection::fromArray([2, 4, 6]);
+        $filteredCollection = $collection->except($other);
         
-        // Resulting collection should contain chunks of original collection's items
-        self::assertCount(2, $chunks);
-        self::assertInstanceOf(FakeMixedCollection::class, $chunks[0]);
-        self::assertSame([1, 2, 3, 4], $chunks[0]->toArray());
-        self::assertInstanceOf(FakeMixedCollection::class, $chunks[1]);
-        self::assertSame([5, 6], $chunks[1]->toArray());
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([1, 3, 5], $filteredCollection->toArray());
+    }
+    
+    public function test_can_except_items_with_class_instances() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
+        $filteredCollection = $collection->except($other);
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo2, $foo4, $foo5], $filteredCollection->toArray());
+    }
+    
+    // exceptBy
+    
+    public function test_can_except_items_by_key() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo1, $foo3, $foo5b]);
+        $filteredCollection = $collection->exceptBy($other, fn(FakeFoo $item) => $item->getValue());
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo2, $foo4], $filteredCollection->toArray());
+    }
+    
+    // intersect
+    
+    public function test_can_intersect_collections() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5]);
+        $other = FakeMixedCollection::fromArray([2, 4, 6]);
+        $filteredCollection = $collection->intersect($other);
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([2, 4], $filteredCollection->toArray());
+    }
+    
+    public function test_can_intersect_collections_with_class_instances() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo3, $foo5b]);
+        $filteredCollection = $collection->intersect($other);
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo3], $filteredCollection->toArray());
+    }
+    
+    // intersectBy
+    
+    public function test_can_intersect_collections_by_key() : void
+    {
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $foo4 = new FakeFoo('4');
+        $foo5 = new FakeFoo('5');
+        $foo5b = new FakeFoo('5');
+        $collection = FakeMixedCollection::fromArray([$foo1, $foo2, $foo3, $foo4, $foo5]);
+        $other = FakeMixedCollection::fromArray([$foo3, $foo5b]);
+        $filteredCollection = $collection->intersectBy($other, static fn(FakeFoo $item) => $item->getValue());
+        
+        // Collection should be mutable and contain only desired values
+        self::assertSame($collection, $filteredCollection);
+        self::assertSame([$foo3, $foo5], $filteredCollection->toArray());
     }
     
     
@@ -1047,6 +1024,30 @@ final class CollectionTest extends TestCase
         self::assertSame(6., FakeMixedCollection::fromArray($items)->sum(static fn(FakeFoo $foo) => (float)$foo->getValue()));
     }
     
+    
+    
+    //==================================================================================================================
+    // Projection methods tests
+    //==================================================================================================================
+    
+    // chunk
+    
+    public function test_can_chunk_items() : void
+    {
+        $collection = FakeMixedCollection::fromArray([1, 2, 3, 4, 5, 6]);
+        $chunks = $collection->chunk(4);
+        
+        // Original collection should not have changed
+        self::assertSame([1, 2, 3, 4, 5, 6], $collection->toArray());
+        
+        // Resulting collection should contain chunks of original collection's items
+        self::assertCount(2, $chunks);
+        self::assertInstanceOf(FakeMixedCollection::class, $chunks[0]);
+        self::assertSame([1, 2, 3, 4], $chunks[0]->toArray());
+        self::assertInstanceOf(FakeMixedCollection::class, $chunks[1]);
+        self::assertSame([5, 6], $chunks[1]->toArray());
+    }
+    
     // select
     
     public function test_can_select_items() : void
@@ -1105,10 +1106,23 @@ final class CollectionTest extends TestCase
         $numbers->selectMany(static fn(object $item) => $item->en);
     }
     
+    // groupBy
     
-    //==================================================================================================================
-    // Query methods
-    //==================================================================================================================
+    public function test_can_group_by_specified_key() : void
+    {
+        // Group values by parity (even/odd)
+        $groups = FakeMixedCollection::fromArray([1, 2, 3, 4])->groupBy(fn(int $item) => $item % 2 === 0 ? 'even' : 'odd');
+        self::assertSame([1, 3], $groups['odd']->toArray());
+        self::assertSame([2, 4], $groups['even']->toArray());
+        
+        // Group class instances' values by parity (even/odd)
+        $foo1 = new FakeFoo('1');
+        $foo2 = new FakeFoo('2');
+        $foo3 = new FakeFoo('3');
+        $groups = FakeFooCollection::fromArray([$foo1, $foo2, $foo3])->groupBy(fn(FakeFoo $item) => $item->getValue() % 2 === 0 ? 'even' : 'odd');
+        self::assertSame([$foo1, $foo3], $groups['odd']->toArray());
+        self::assertSame([$foo2], $groups['even']->toArray());
+    }
     
     // join
     
@@ -1195,41 +1209,33 @@ final class CollectionTest extends TestCase
         self::assertFalse($collection->any(fn($item) => $item > 3));
     }
     
-    // contains
     
-    public function test_if_contains_a_value() : void
-    {
-        // Primitive types
-        self::assertTrue(FakeMixedCollection::fromArray([1, 2, 3])->contains(2));
-        self::assertFalse(FakeMixedCollection::fromArray([1, 2, 3])->contains(4));
-        self::assertTrue(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('b'));
-        self::assertFalse(FakeMixedCollection::fromArray(['a', 'b', 'c'])->contains('d'));
-        // Class instances
-        $foo = new FakeFoo();
-        self::assertTrue(FakeMixedCollection::fromArray([new FakeFoo(), $foo])->contains($foo));
-        self::assertFalse(FakeMixedCollection::fromArray([new FakeFoo(), new FakeFoo()])->contains(new FakeFoo()));
-    }
     
-    public function test_if_contains_using_custom_equality_comparer() : void
+    //==================================================================================================================
+    // Traversal operations tests
+    //==================================================================================================================
+    
+    // forEach
+    
+    public function test_can_execute_a_function_on_each_items() : void
     {
-        $items = [new FakeFoo('A'), new FakeFoo('B')];
-        // Different class instances are not equal by default...
-        self::assertFalse(FakeMixedCollection::fromArray($items)->contains(
-            new FakeFoo('B')
-        ));
-        // ...but a custom comparer can compare instance's value instead
-        $comparer = static fn (FakeFoo $foo, string $needle) => $foo->getValue() === $needle;
-        self::assertTrue(FakeMixedCollection::fromArray($items)->contains('B', $comparer));
-        self::assertFalse(FakeMixedCollection::fromArray($items)->contains('C', $comparer));
+        $items = [];
+        $func = static function($item) use(&$items) {
+            $items[] = $item;
+        };
+        
+        FakeMixedCollection::fromArray([1, 3, 2, 4])->forEach($func);
+        self::assertSame(1, $items[0]);
+        self::assertSame(3, $items[1]);
+        self::assertSame(2, $items[2]);
+        self::assertSame(4, $items[3]);
     }
     
     
     
     //==================================================================================================================
-    // Misc
+    // Chaining tests
     //==================================================================================================================
-    
-    
     
     public function test_can_chain_many_operations() : void
     {
