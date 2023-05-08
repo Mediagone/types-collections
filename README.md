@@ -1,5 +1,12 @@
 # Types Collections
 
+[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg
+[ico-version]: https://img.shields.io/packagist/v/mediagone/types-collections.svg
+[ico-downloads]: https://img.shields.io/packagist/dt/mediagone/types-collections.svg
+
+[link-packagist]: https://packagist.org/packages/mediagone/types-collections
+[link-downloads]: https://packagist.org/packages/mediagone/types-collections
+
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
 [![Software License][ico-license]](LICENSE)
@@ -95,13 +102,13 @@ And... that's all! Your custom collection now only accepts Foo instances.
 
 ### <a name="usage-constructors"></a>Constructors
 
-#### a. Empty
+#### Empty
 You can create an empty collection using the `new` static factory method:
 ```php
 $collection = StringCollection::new();
 ```
 
-#### b. From array
+#### From array
 You can also instantiate any collection with initial data using `fromArray` and items can be retrieved as a PHP array using `toArray` method, for example:
 ```php
 $collection = StringCollection::fromArray(['item1', 'item2', '3']);
@@ -120,7 +127,7 @@ Typed collections throw an error if invalid items are added to the collection:
 $collection = IntCollection::fromArray([1, 2, 'invalid item']);
 ```
 
-#### c. From repeated value
+#### From repeated value
 Collection can also be created with initial repeated value `fromRepeatedValue`:
 ```php
 $collection = StringCollection::fromRepeatedValue('something', 3);
@@ -133,7 +140,7 @@ var_dump($collection->toArray());
 //   }
 ```
 
-#### d. Additional constructors
+#### Additional constructors
 
 Some collections implement specific static factory methods related to the underlying type (take a look to each class to discover specific available factories), for example in the `IntCollection` class :
 ```php
@@ -240,15 +247,14 @@ But, the base collection class offers a lot more useful methods:
 
 
 
+
+
+
+
+
+
+
+
 ## License
 
 _Types Collections_ is licensed under MIT license. See LICENSE file.
-
-
-
-[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg
-[ico-version]: https://img.shields.io/packagist/v/mediagone/types-collection.svg
-[ico-downloads]: https://img.shields.io/packagist/dt/mediagone/types-collection.svg
-
-[link-packagist]: https://packagist.org/packages/mediagone/types-collection
-[link-downloads]: https://packagist.org/packages/mediagone/types-collection
