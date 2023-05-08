@@ -360,14 +360,26 @@ final class CollectionTest extends TestCase
     
     public function test_can_append() : void
     {
-        $items = [new FakeFoo(), new FakeFoo(), new FakeFoo()];
-        $collection = FakeFooCollection::fromArray($items);
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
         
-        $newItem = new FakeFoo();
-        $result = $collection->append($newItem);
+        $result = $collection->append('item4');
+        
+        // Collection should be mutable and contains the new element
+        self::assertSame($collection, $result);
+        self::assertSame(['item1', 'item2', 'item3', 'item4'], $collection->toArray());
+    }
     
-        self::assertSame([...$items, $newItem], $collection->toArray());
-        self::assertSame($collection, $result); // Collection should be mutable
+    public function test_can_append_multiple_items() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->append('item4', 'item5');
+        
+        // Collection should be mutable and contains the new elements
+        self::assertSame($collection, $result);
+        self::assertSame(['item1', 'item2', 'item3', 'item4', 'item5'], $collection->toArray());
     }
     
     public function test_cannot_append_element_of_invalid_type() : void
@@ -380,14 +392,26 @@ final class CollectionTest extends TestCase
     
     public function test_can_prepend() : void
     {
-        $items = [new FakeFoo(), new FakeFoo(), new FakeFoo()];
-        $collection = FakeFooCollection::fromArray($items);
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
         
-        $newItem = new FakeFoo();
-        $result = $collection->prepend($newItem);
+        $result = $collection->prepend('item0');
         
-        self::assertSame([$newItem, ...$items], $collection->toArray());
-        self::assertSame($collection, $result); // Collection should be mutable
+        // Collection should be mutable and contains the new element
+        self::assertSame($collection, $result);
+        self::assertSame(['item0', 'item1', 'item2', 'item3'], $collection->toArray());
+    }
+    
+    public function test_can_prepend_multiple_items() : void
+    {
+        $items = ['item1', 'item2', 'item3'];
+        $collection = StringCollection::fromArray($items);
+        
+        $result = $collection->prepend('item-1', 'item0');
+        
+        // Collection should be mutable and contains the new elements
+        self::assertSame($collection, $result);
+        self::assertSame(['item-1', 'item0', 'item1', 'item2', 'item3'], $collection->toArray());
     }
     
     public function test_cannot_prepend_element_of_invalid_type() : void

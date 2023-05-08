@@ -367,6 +367,46 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     
     /**
+     * Adds a value to the end of the collection.
+     * @param T ...$items The value(s) to append to the collection.
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function append(...$items): self
+    {
+        $collection = $this->getModifiableInstance();
+        foreach ($items as $item) {
+            if ($this->validator !== null) {
+                ($this->validator)($item, null);
+            }
+            
+            $collection->items[] = $item;
+        }
+        
+        return $collection;
+    }
+    
+    /**
+     * Adds a value to the beginning of the collection.
+     * @param T ...$items The value(s) to prepend to the collection.
+     * @return Collection<T> The current collection
+     * @return static The current collection instance or a new instance if the collection is immutable
+     */
+    final public function prepend(...$items): self
+    {
+        $collection = $this->getModifiableInstance();
+        foreach (array_reverse($items) as $item) {
+            if ($this->validator !== null) {
+                ($this->validator)($item, null);
+            }
+            
+            array_unshift($collection->items, $item);
+        }
+        
+        return $collection;
+    }
+    
+    
+    /**
      * Remove the specified value from the collection.
      * @param T $item The value to remove from the collection. 
      * @throws LogicException Thrown if the collection doesn't contain the specified value.
@@ -381,41 +421,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         $collection = $this->getModifiableInstance();
         array_splice($this->items, (int)$index, 1);
-        
-        return $collection;
-    }
-    
-    /**
-     * Adds a value to the end of the collection.
-     * @param T $item The value to append to the collection.
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function append($item): self
-    {
-        if ($this->validator !== null) {
-            ($this->validator)($item, null);
-        }
-        
-        $collection =  $this->getModifiableInstance();
-        $collection->items[] = $item;
-        
-        return $collection;
-    }
-    
-    /**
-     * Adds a value to the beginning of the collection.
-     * @param T $item The value to prepend to the collection.
-     * @return Collection<T> The current collection
-     * @return static The current collection instance or a new instance if the collection is immutable
-     */
-    final public function prepend($item): self
-    {
-        if ($this->validator !== null) {
-            ($this->validator)($item, null);
-        }
-    
-        $collection = $this->getModifiableInstance();
-        array_unshift($collection->items, $item);
         
         return $collection;
     }
