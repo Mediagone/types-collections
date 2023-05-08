@@ -29,16 +29,16 @@ $ composer require mediagone/types-collections
 
 ### <a name="primitive-collections"></a>Primitive-type collections
 
-The library provides strongly-typed collections for all PHP's primitive types:
-- `Mediagone\Types\Collections\Types\ArrayCollection`: _a strongly-typed collection that can only contain PHP **array** values._
-- `Mediagone\Types\Collections\Types\BoolCollection`: _a strongly-typed collection that can only contain PHP **boolean** values._
-- `Mediagone\Types\Collections\Types\CallableCollection`: _a strongly-typed collection that can only contain PHP **callable** values._
-- `Mediagone\Types\Collections\Types\FloatCollection`: _a strongly-typed collection that can only contain PHP **float** values._
-- `Mediagone\Types\Collections\Types\IntCollection`: _a strongly-typed collection that can only contain PHP **integer** values._
-- `Mediagone\Types\Collections\Types\MixedCollection`: _a strongly-typed collection that can only contain PHP **mixed** values._
-- `Mediagone\Types\Collections\Types\ObjectCollection`: _a strongly-typed collection that can only contain PHP **object** values._
-- `Mediagone\Types\Collections\Types\ResourceCollection`: _a strongly-typed collection that can only contain PHP **resource** values._
-- `Mediagone\Types\Collections\Types\StringCollection`: _a strongly-typed collection that can only contain PHP **string** values._
+The `Mediagone\Types\Collections\Types` namespace provides strongly-typed collections for all PHP's primitive types:
+- `ArrayCollection`: _a strongly-typed collection that can only contain PHP **array** values._
+- `BoolCollection`: _a strongly-typed collection that can only contain PHP **boolean** values._
+- `CallableCollection`: _a strongly-typed collection that can only contain PHP **callable** values._
+- `FloatCollection`: _a strongly-typed collection that can only contain PHP **float** values._
+- `IntCollection`: _a strongly-typed collection that can only contain PHP **integer** values._
+- `MixedCollection`: _a strongly-typed collection that can only contain PHP **mixed** values._
+- `ObjectCollection`: _a strongly-typed collection that can only contain PHP **object** values._
+- `ResourceCollection`: _a strongly-typed collection that can only contain PHP **resource** values._
+- `StringCollection`: _a strongly-typed collection that can only contain PHP **string** values._
 
 
 ### <a name="class-collections"></a>Class collections
