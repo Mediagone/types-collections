@@ -1,7 +1,7 @@
 {
     "name": "mediagone/types-collections",
     "type": "library",
-    "description": "Base class replacing PHP's array, also provides efficient filtering/manipulations with an expression API (Microsoft's LINQ-like features).",
+    "description": "Provides full-featured collections for primitive types, and generic classes to build your own strongly-typed collections. Each collection has chainable methods to perform traversal, filter and projection operations (similar to Microsoft's LINQ-like features).",
     "keywords": ["collections", "linq", "value objects", "type"],
     "license": "MIT",
     "authors": [
