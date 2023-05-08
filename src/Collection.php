@@ -96,7 +96,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     //==================================================================================================================
     
     /**
-     * Instantiates a new collection instance.
      * @param T[] $items The initial collection's items.
      */
     final protected function __construct(array $items)
@@ -114,7 +113,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Generates a new empty boolean collection.
-     * @return static
+     * @return static A new empty collection.
      */
     public static function new(): Collection
     {
@@ -125,7 +124,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     /**
      * Generates a new collection containing the specified items.
      * @param T[] $items
-     * @return static
+     * @return static A new collection that contains the specified items.
      */
     public static function fromArray(array $items): Collection
     {
@@ -184,8 +183,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
-    
-    
     //==================================================================================================================
     // Element operations
     //==================================================================================================================
@@ -210,8 +207,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         return in_array($needle, $this->items, true);
     }
-    
-    // TODO indexOf / find($item)?
     
     
     /**
@@ -395,10 +390,8 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     //==================================================================================================================
-    // Mutation methods
-    //   Use these functions to add, remove, filter or reorder collection's items.
-    //   Depending on the implementation  of "getModifiableInstance" method, they return the current collection instance
-    //   or a new one.
+    // Transform methods
+    // Depending on the implementation  of "getModifiableInstance" method, they return the current collection instance or a new one.
     //==================================================================================================================
     
     /**
@@ -481,8 +474,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     
-    
-    
     /**
      * Computes the set difference with the specified collection.
      * @note Equivalent to the "array_diff" PHP function.
@@ -547,7 +538,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         return $collection;
     }
-    
     
     /**
      * Computes the set difference of two sequences according to a specified key selector function.
@@ -646,15 +636,11 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         return $collection;
     }
     
-    
     /**
      * Bypasses a specified number of items at the end of the collection and then returns the remaining items.
      * @note Equivalent to the "array_slice" PHP function: array_slice($array, offset: count($array) - $count)
-     *   TODO Returns a new collection that contains the items from source with the last count items of the source collection omitted.
-     *   Returns a new collection that contains the items from the current collection except the last count omitted.
      * @param int $count The number of items to omit from the end of the collection.
      * @return static The current collection instance or a new instance if the collection is immutable.
-     * TODO @ return static The current collection instance (or a new instance if the collection is immutable) that contains the items from source minus count items from the end of the collection.
      */
     public function skipLast(int $count) : self
     {
@@ -670,7 +656,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * Bypasses items in the collection as long as a specified condition is true and then returns the remaining items.
      * @param callable(T $item, int $index=):bool $predicate A function to test each item for a condition.
      * @return static The current collection instance or a new instance if the collection is immutable.
-     * TODO @ return static The current collection instance (or a new instance if the collection is immutable) that contains the items from the input collection starting at the first item in the linear series that does not pass the test specified by predicate.
      */
     public function skipWhile(callable $predicate) : self
     {
@@ -736,7 +721,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         return $collection;
     }
-    
     
     
     /**
@@ -819,7 +803,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     {
         $collection = $this->getModifiableInstance();
         sort($this->items);
-        //usort($this->items, static fn($a, $b) => $a <=> $b);
         
         return $collection;
     }
@@ -869,7 +852,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     //==================================================================================================================
     // Aggregation methods
-    // Computes a single value from a collection of values.
     //==================================================================================================================
     
     /**
@@ -1016,7 +998,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
      * @param Collection<TOther> $other The collection to join to the current collection.
      * @param callable(T $item): TKey $keySelector A function to extract the join key from each item of the current collection.
      * @param callable(TOther $item): TKeyOther $otherKeySelector A function to extract the join key from each item of the other collection.
-     * @param callable(T $item, TOther $otherItem): TResult $resultSelector A function to create a result element from two matching elements.
+     * @param callable(T $item, TOther $otherItem): TResult $resultSelector A function to create a result element from two matching items.
      * @param ?callable(TKey $key, TKeyOther $otherKey): bool $comparer An equality comparer function to compare keys, or null to use the default equality comparer to compare keys.
      * @return MixedCollection A MixedCollection that contains items obtained by performing an inner join on two collections.
      */
@@ -1063,12 +1045,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     
     
-    
-    
-    
-    
-    
-    
     //==================================================================================================================
     // Quantifier methods
     // Returns a Boolean value that indicates whether some or all of the items in a collection satisfy a condition.
@@ -1111,14 +1087,6 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
         
         return !empty($this->items);
     }
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
