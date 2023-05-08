@@ -962,6 +962,51 @@ final class CollectionTest extends TestCase
         self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems->toArray());
     }
     
+    // selectMany
+    
+    public function test_can_select_many_items() : void
+    {
+        $numbers = FakeMixedCollection::fromArray([
+            (object)['en' => 'one', 'translations' => ['un']],
+            (object)['en' => 'two', 'translations' => ['deux','dos']],
+            (object)['en' => 'three', 'translations' => ['trois', 'tres']],
+        ]);
+        
+        // Without resultSelector function.
+        $results = $numbers->selectMany(
+            static fn(object $item) => $item->translations,
+        );
+        self::assertCount(5, $results);
+        self::assertSame('un', $results[0]);
+        self::assertSame('deux', $results[1]);
+        self::assertSame('dos', $results[2]);
+        self::assertSame('trois', $results[3]);
+        self::assertSame('tres', $results[4]);
+        
+        // Using resultSelector function.
+        $results = $numbers->selectMany(
+            static fn(object $item) => $item->translations,
+            static fn(object $item, string $translation) => [$item->en, $translation],
+        );
+        self::assertCount(5, $results);
+        self::assertSame(['one', 'un'], $results[0]);
+        self::assertSame(['two', 'deux'], $results[1]);
+        self::assertSame(['two', 'dos'], $results[2]);
+        self::assertSame(['three', 'trois'], $results[3]);
+        self::assertSame(['three', 'tres'], $results[4]);
+    }
+    
+    public function test_can_select_many_items_that_arent_iterable() : void
+    {
+        $numbers = FakeMixedCollection::fromArray([
+            (object)['en' => 'one', 'translations' => ['un']],
+            (object)['en' => 'two', 'translations' => ['deux','dos']],
+            (object)['en' => 'three', 'translations' => ['trois', 'tres']],
+        ]);
+        
+        $this->expectException(TypeError::class);
+        $numbers->selectMany(static fn(object $item) => $item->en);
+    }
     
     
     //==================================================================================================================

@@ -35,6 +35,7 @@ use function end;
 use function get_class;
 use function in_array;
 use function is_a;
+use function is_iterable;
 use function max;
 use function min;
 use function shuffle;
@@ -922,6 +923,35 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     public function select(callable $selector) : MixedCollection
     {
         return MixedCollection::fromArray(array_map($selector, $this->items));
+    }
+    
+    /**
+     * Projects each item of the collection to a collection and flattens the resulting collections into one collection.
+     * @template TCollection The type of the intermediate items collected by $iterableSelector.
+     * @param callable(T $item): iterable<TCollection> $iterableSelector A transform function to apply to each item of the input collection that returns an iterable of intermediate items.
+     * @template TResult The type of the items of the resulting collection.
+     * @param ?callable(T $item, TCollection $subItem):TResult $resultSelector A transform function to apply to each item of the intermediate collection.
+     * @return MixedCollection A new collection that contains items obtained by performing the one-to-many projection over the source collection.
+     */
+    public function selectMany(callable $iterableSelector, ?callable $resultSelector = null) : MixedCollection
+    {
+        if ($resultSelector === null) {
+            $resultSelector = static fn($item, $subItem) => $subItem;
+        }
+        
+        $items = [];
+        foreach ($this->items as $item) {
+            $iterable = $iterableSelector($item);
+            if (! is_iterable($iterable)) {
+                throw new TypeError("Selected collection object is not an iterable type (got '".gettype($iterable)."')");
+            }
+            
+            foreach ($iterable as $subItem) {
+                $items[] = $resultSelector($item, $subItem);
+            }
+        }
+        
+        return MixedCollection::fromArray($items);
     }
     
     /**
