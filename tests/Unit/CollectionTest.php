@@ -1276,6 +1276,25 @@ final class CollectionTest extends TestCase
         self::assertSame(4, $items[3]);
     }
     
+    public function test_can_execute_a_function_on_each_items_with_collection_instance() : void
+    {
+        $items = [];
+        $func = static function($item, $collection) use(&$items) {
+            $items[] = (object)['num' => $item, 'collection' => $collection];
+        };
+        
+        $collection = FakeMixedCollection::fromArray([1, 3, 2, 4]); 
+        $collection->forEach($func);
+        self::assertSame(1, $items[0]->num);
+        self::assertSame($collection, $items[0]->collection);
+        self::assertSame(3, $items[1]->num);
+        self::assertSame($collection, $items[1]->collection);
+        self::assertSame(2, $items[2]->num);
+        self::assertSame($collection, $items[2]->collection);
+        self::assertSame(4, $items[3]->num);
+        self::assertSame($collection, $items[3]->collection);
+    }
+    
     
     
     //==================================================================================================================
