@@ -287,13 +287,34 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Returns the last item of the collection (that satisfies a condition, if a predicate function is specified) or the specified default value if no such item is found.
-     * @param ?T $default The default value to return if no item is found.
+     * Returns the last item of the collection item of the collection (that satisfies the optional condition) or nulle if no such item is found.
      * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
      * @return ?T The last item of the collection or the specified default value.
      */
+    public function lastOrNull(?callable $predicate = null)
+    {
+        if ($predicate === null) {
+            $items = $this->items;
+        }
+        else {
+            $items = array_values(array_filter($this->items, $predicate));
+        }
+        
+        return empty($items) ? null : end($items);
+    }
+    
+    /**
+     * Returns the last item of the collection (that satisfies the optional condition) or a default value if no such item is found.
+     * @param T $default The default value to return if no item is found.
+     * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
+     * @return T The last item of the collection or the specified default value.
+     */
     public function lastOrDefault($default, ?callable $predicate = null)
     {
+        if ($default === null) {
+            throw new InvalidArgumentException('Default value should not be null');
+        }
+        
         if ($predicate === null) {
             $items = $this->items;
         }

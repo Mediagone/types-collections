@@ -431,6 +431,17 @@ final class CollectionTest extends TestCase
         FakeMixedCollection::fromArray([1, 2, 3])->last(fn($e) => $e === 4);
     }
     
+    // lastOrNull
+    
+    public function test_can_return_null_as_last_element() : void
+    {
+        // Without custom predicate function
+        self::assertNull(FakeMixedCollection::fromArray([])->lastOrNull());
+        // With custom predicate function
+        self::assertNull(FakeMixedCollection::fromArray([1, 2, 3])->lastOrNull(fn($e) => $e > 3));
+        self::assertNull(FakeMixedCollection::fromArray([1, 2, 3])->lastOrNull(fn($e) => $e < 1));
+    }
+    
     // lastOrDefault
     
     public function test_can_return_default_as_last_element() : void
@@ -440,6 +451,13 @@ final class CollectionTest extends TestCase
         // Without custom predicate function
         self::assertSame('default', FakeMixedCollection::fromArray([1, 2, 3])->lastOrDefault('default', fn($e) => $e > 3));
         self::assertSame('default', FakeMixedCollection::fromArray([1, 2, 3])->lastOrDefault('default', fn($e) => $e < 1));
+    }
+    
+    public function test_cannot_return_null_as_default_last_element() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        FakeMixedCollection::fromArray([])->lastOrDefault(null);
     }
     
     // single
