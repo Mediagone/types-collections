@@ -191,7 +191,8 @@ But, the base collection class offers a lot more useful methods:
   - `concat`: Merges a collection into the current collection's items.
   - `remove`: Removes an item from the collection.
   - `first`: Returns the first item of the collection.
-  - `firstOrDefault`: Returns the first item of the collection or a default value if no such item is found.
+  - `firstOrNull`: Returns the first item of the collection (that satisfies the optional condition) or null if no such item is found.
+  - `firstOrDefault`: Returns the first item of the collection (that satisfies the optional condition) or a default value if no such item is found.
   - `last`: Returns the last item of the collection.
   - `lastOrDefault`: Returns the last item of the collection or the specified default value if no such item is found.
   - `single`: Returns the only item of the collection or throws an exception if more than one item exists.

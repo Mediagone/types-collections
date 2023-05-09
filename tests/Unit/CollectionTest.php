@@ -379,6 +379,17 @@ final class CollectionTest extends TestCase
         FakeMixedCollection::fromArray([1, 2, 3])->first(fn($e) => $e === 4);
     }
     
+    // firstOrNull
+    
+    public function test_can_return_null_as_first_element() : void
+    {
+        // Without custom predicate function
+        self::assertNull(FakeMixedCollection::fromArray([])->firstOrNull());
+        // With custom predicate function
+        self::assertNull(FakeMixedCollection::fromArray([1, 2, 3])->firstOrNull(fn($e) => $e > 3));
+        self::assertNull(FakeMixedCollection::fromArray([1, 2, 3])->firstOrNull(fn($e) => $e < 1));
+    }
+    
     // firstOrDefault
     
     public function test_can_return_default_as_first_element() : void
@@ -388,6 +399,13 @@ final class CollectionTest extends TestCase
         // With custom predicate function
         self::assertSame('default', FakeMixedCollection::fromArray([1, 2, 3])->firstOrDefault('default', fn($e) => $e > 3));
         self::assertSame('default', FakeMixedCollection::fromArray([1, 2, 3])->firstOrDefault('default', fn($e) => $e < 1));
+    }
+    
+    public function test_cannot_return_null_as_default_first_element() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        
+        FakeMixedCollection::fromArray([])->firstOrDefault(null);
     }
     
     // last

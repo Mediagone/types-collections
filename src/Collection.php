@@ -232,13 +232,31 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Returns the first item of the collection (that satisfies a condition, if a predicate function is specified) or a default value if no such item is found.
-     * @param ?T $default The default value to return if no item is found.
+     * Returns the first item of the collection (that satisfies the optional condition) or null if no such item is found.
+     * @param (callable(T $item):bool)|null $predicate A function to test each item for a condition.
+     * @return ?T The first item of the collection or null.
+     */
+    public function firstOrNull(?callable $predicate = null)
+    {
+        if ($predicate === null) {
+            return $this->items[0] ?? null;
+        }
+        
+        return array_values(array_filter($this->items, $predicate))[0] ?? null;
+    }
+    
+    /**
+     * Returns the first item of the collection (that satisfies the optional condition) or a default value if no such item is found.
+     * @param T $default The default value to return if no item is found.
      * @param ?callable(T $item):bool $predicate A function to test each item for a condition.
-     * @return ?T The first item of the collection or the specified default value.
+     * @return T The first item of the collection or the specified default value.
      */
     public function firstOrDefault($default, ?callable $predicate = null)
     {
+        if ($default === null) {
+            throw new InvalidArgumentException('Default value should not be null');
+        }
+        
         if ($predicate === null) {
             return $this->items[0] ?? $default;
         }
