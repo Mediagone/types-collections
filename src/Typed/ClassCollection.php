@@ -12,7 +12,7 @@ use function is_a;
 
 /**
  * A strongly typed collection that can contain class instances, accessible by index and having methods for sorting, searching, and modifying the collection.
- * @template C
+ * @template C of object
  * @extends Collection<C>
  */
 abstract class ClassCollection extends Collection
@@ -21,6 +21,9 @@ abstract class ClassCollection extends Collection
     // Abstract methods
     //==================================================================================================================
     
+    /**
+     * @return class-string<C> The FQCN of the class instances contained in the collection.
+     */
     abstract protected static function classFqcn(): string;
     
     
