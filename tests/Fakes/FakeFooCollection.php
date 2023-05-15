@@ -15,7 +15,7 @@ class FakeFooCollection extends Collection
 {
     protected function getValidator(): ?Closure
     {
-        // Ensure that all elements in the supplied array are Foo instances.
+        // Ensure that all elements in the supplied array are FakeFoo instances.
         return static function($item, $index) {
             if (! is_a($item, FakeFoo::class)) {
                 throw new InvalidCollectionItemException($item, FakeFoo::class, $index);

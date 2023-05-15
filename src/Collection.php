@@ -496,15 +496,14 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * Concatenates a collection at the end of the current collection.
-     * @param Collection<T> $other The collection to concatenate to the current collection, must be an instance or a subclass of the current collection (covariant classes only).
+     * @param Collection<T> $other The collection to concatenate to the current collection.
      * @return static The current collection instance or a new instance if the collection is immutable
      * @throws TypeError Thrown if both collections to concatenate are not of the same type.
      */
     final public function concat($other): self
     {
-        // Allow to use a more derived type (covariant) than current collection.
-        if (! is_a($other, get_class($this))) {
-            throw new TypeError('Invalid collection to concatenate ('.get_class($other).'), you can only concatenate covariant collections.');
+        if (get_class($other) !== static::class) {
+            throw new TypeError('Invalid collection to concatenate ('.get_class($other).'), you can only concatenate collections of the same class (got '.static::class.').');
         }
         
         $collection = $this->getModifiableInstance();

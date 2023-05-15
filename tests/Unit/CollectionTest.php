@@ -20,8 +20,7 @@ use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use Tests\Mediagone\Types\Collections\Fakes\FakeBar;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFoo;
-use Tests\Mediagone\Types\Collections\Fakes\FakeFooChild;
-use Tests\Mediagone\Types\Collections\Fakes\FakeFooChildCollection;
+use Tests\Mediagone\Types\Collections\Fakes\FakeBarCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeFooCollection;
 use Tests\Mediagone\Types\Collections\Fakes\FakeMixedCollection;
 use TypeError;
@@ -294,28 +293,13 @@ final class CollectionTest extends TestCase
         self::assertSame([], $concatenatedCollection->toArray());
     }
     
-    public function test_can_concatenate_two_covariant_collections() : void
+    public function test_cannot_concatenate_two_different_collections() : void
     {
-        $foo1 = new FakeFoo('1');
-        $foo2 = new FakeFoo('2');
-        $collection = FakeFooCollection::fromArray([$foo1, $foo2]);
-        $fooChild3 = new FakeFooChild('3');
-        $fooChild4 = new FakeFooChild('4');
-        $covariantCollection = FakeFooChildCollection::fromArray([$fooChild3, $fooChild4]);
-        
-        // Collection should be mutable
-        $concatenatedCollection = $collection->concat($covariantCollection);
-        self::assertSame($collection, $concatenatedCollection);
-        self::assertSame([$foo1, $foo2, $fooChild3, $fooChild4], $concatenatedCollection->toArray());
-    }
-    
-    public function test_cannot_concatenate_two_contravariant_collections() : void
-    {
-        $collection = FakeFooChildCollection::fromArray([new FakeFooChild('1'), new FakeFooChild('2')]);
-        $contravariantCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
+        $collection = FakeBarCollection::fromArray([new FakeBar('1'), new FakeBar('2')]);
+        $otherCollection = FakeFooCollection::fromArray([new FakeFoo('3'), new FakeFoo('4')]);
         
         $this->expectException(TypeError::class);
-        $collection->concat($contravariantCollection);
+        $collection->concat($otherCollection);
     }
     
     public function test_cannot_concatenate_two_collections_of_different_types() : void
