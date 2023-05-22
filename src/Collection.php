@@ -1174,6 +1174,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     /**
      * @throws OutOfBoundsException Thrown if the specified offset is greater than the number of items in the collection.
+     * @return mixed
      */
     #[\ReturnTypeWillChange]
     final public function offsetGet($offset)
