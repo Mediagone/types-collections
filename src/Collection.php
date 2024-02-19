@@ -1171,6 +1171,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     // JsonSerializable interface implementation
     
     /**
+     * @inheritDoc
      * @return T[]
      */
     public function jsonSerialize() : array
@@ -1182,6 +1183,7 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     // IteratorAggregate interface implementation
     
     /**
+     * @inheritDoc
      * @return ArrayIterator<int, T>
      */
     final public function getIterator() : ArrayIterator
@@ -1192,12 +1194,16 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     
     // ArrayAccess interface implementation
     
+    /**
+     * @inheritDoc
+     */
     final public function offsetExists($offset) : bool
     {
         return isset($this->items[$offset]);
     }
     
     /**
+     * @inheritDoc
      * @throws OutOfBoundsException Thrown if the specified offset is greater than the number of items in the collection.
      * @return mixed
      */
