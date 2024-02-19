@@ -1102,6 +1102,20 @@ final class CollectionTest extends TestCase
         self::assertSame([1, 0, 2, 0, 3, 0], $selectedItems->toArray());
     }
     
+    
+    public function test_can_selectWhere_items() : void
+    {
+        $items = [1, 4, 2, 2, 3, 4];
+        $collection = FakeMixedCollection::fromArray($items);
+        // select indexes of items > 2
+        $selectedItems = $collection->selectWhere(
+            static fn($item, $index) => $index,
+            static fn($item) => $item > 2
+        );
+        
+        self::assertSame([1, 4, 5], $selectedItems->toArray());
+    }
+    
     // selectMany
     
     public function test_can_select_many_items() : void

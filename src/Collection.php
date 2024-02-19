@@ -994,6 +994,26 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
+     * Filters the collection items based on a predicate and projects each item into a new form, then returns a new 
+     * collection that contains the transformed items of the collection.
+     * @note Equivalent to the combination of "array_filter" and "array_map" PHP functions.
+     * @param callable(T $item, int $index=):mixed $selector A transform function to apply to each item of the collection.
+     * @param callable(T $item):bool $predicate A function to test each item for a condition.
+     * @return MixedCollection A new collection that contains the transformed items of the current collection.
+     */
+    public function selectWhere(callable $selector, callable $predicate) : MixedCollection
+    {
+        $values = [];
+        foreach ($this->items as $index => $item) {
+            if ($predicate($item)) {
+                $values[] = $selector($item, $index);
+            }
+        }
+        
+        return MixedCollection::fromArray($values);
+    }
+    
+    /**
      * Projects each item of the collection to a collection and flattens the resulting collections into one collection.
      * @template TCollection The type of the intermediate items collected by $iterableSelector.
      * @param callable(T $item): iterable<TCollection> $iterableSelector A transform function to apply to each item of the input collection that returns an iterable of intermediate items.
