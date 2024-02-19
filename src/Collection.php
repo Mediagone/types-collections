@@ -978,14 +978,19 @@ abstract class Collection implements Countable, IteratorAggregate, ArrayAccess, 
     }
     
     /**
-     * Projects each item of the collection into a new form and return an array that contains the transformed items of the collection.
+     * Projects each item of the collection into a new form and returns a new collection that contains the transformed items of the collection.
      * @note Equivalent to "array_map" PHP function.
-     * @param callable(T $item):mixed $selector A transform function to apply to each item of the collection.
+     * @param callable(T $item, int $index=):mixed $selector A transform function to apply to each item of the collection.
      * @return MixedCollection A new collection that contains the transformed items of the current collection.
      */
     public function select(callable $selector) : MixedCollection
     {
-        return MixedCollection::fromArray(array_map($selector, $this->items));
+        $values = [];
+        foreach ($this->items as $index => $value) {
+            $values[] = $selector($value, $index);
+        }
+        
+        return MixedCollection::fromArray($values);
     }
     
     /**

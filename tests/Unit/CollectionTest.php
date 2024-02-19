@@ -1089,6 +1089,19 @@ final class CollectionTest extends TestCase
         self::assertSame([10, 40, 20, 20, 30, 40], $selectedItems->toArray());
     }
     
+    public function test_can_select_items_using_indexes() : void
+    {
+        $items = [1, 4, 2, 2, 3, 4];
+        $collection = FakeMixedCollection::fromArray($items);
+        
+        $selectedItems = $collection->select(
+            // select even indexed items value, or zero
+            static fn($item, $index) => ($index % 2) === 0 ? $item : 0
+        );
+        
+        self::assertSame([1, 0, 2, 0, 3, 0], $selectedItems->toArray());
+    }
+    
     // selectMany
     
     public function test_can_select_many_items() : void
